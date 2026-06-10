@@ -43,7 +43,7 @@ describe("public helpers", () => {
     expect(navUnitConfig({ destinationIndex: NavDestinationIds.HUMMINGBIRD })).toMatchObject({
       type: "config_nav_unit",
       destinationIndex: 10,
-      warpActive: true
+      warpActive: false
     });
     expect(navDestinationName(10)).toBe("HUMMINGBIRD");
     expect(navDestinationId("FALCON")).toBe(50);

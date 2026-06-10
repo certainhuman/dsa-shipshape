@@ -73,9 +73,9 @@ export function pusherConfig(options: PusherConfigOptions = {}): PusherConfig {
 export function navUnitConfig(options: NavUnitConfigOptions = {}): NavUnitConfig {
   return {
     type: "config_nav_unit",
-    destinationIndex: options.destinationIndex ?? 0,
+    destinationIndex: options.destinationIndex ?? 10,
     page: options.page ?? 0,
-    warpActive: options.warpActive ?? true,
+    warpActive: options.warpActive ?? false,
     warpOnCritical: options.warpOnCritical ?? true,
     warpOnNoCaptains: options.warpOnNoCaptains ?? true
   };
