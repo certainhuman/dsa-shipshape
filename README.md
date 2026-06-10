@@ -10,6 +10,21 @@ Use this package when you want to read an existing DSA blueprint, generate a new
 npm install dsa-shipshape
 ```
 
+Or load the browser bundle directly from a CDN:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/dsa-shipshape/dist/browser/dsa-shipshape.global.js"></script>
+<script>
+  const ship = new DSAShipshape.Structure(12, 8); // Create an empty 12x8 structure.
+  ship.place(DSAShipshape.Item.IRON_BLOCK, 4, 3); // Place one iron block.
+
+  const blueprint = ship.toBlueprint(); // Compact placements into blueprint commands.
+  const code = DSAShipshape.Blueprint.encode(blueprint, { prefix: true }); // Encode for DSA.
+
+  console.log(code); // Print the encoded string.
+</script>
+```
+
 ## Quick Start
 
 Create a small blueprint and encode it back to a DSA string:

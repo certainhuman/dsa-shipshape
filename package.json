@@ -2,6 +2,7 @@
   "name": "dsa-shipshape",
   "version": "0.1.0",
   "description": "TypeScript utilities for parsing, editing, and encoding Deep Space Airships blueprints for drednot.io.",
+  "license": "MIT",
   "homepage": "https://github.com/certainhuman/dsa-shipshape#readme",
   "repository": {
     "type": "git",
@@ -22,9 +23,14 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "browser": "./dist/index.js",
+  "unpkg": "./dist/browser/dsa-shipshape.global.js",
+  "jsdelivr": "./dist/browser/dsa-shipshape.global.js",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+      "browser": "./dist/index.js",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
@@ -33,8 +39,14 @@
     "dist",
     "docs"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
+    "check": "npm run typecheck && npm test",
+    "pack:check": "npm pack --dry-run",
+    "prepublishOnly": "npm run check && npm run build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
