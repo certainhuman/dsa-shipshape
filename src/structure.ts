@@ -172,7 +172,7 @@ export class Structure {
 
       const sortedStageBuilds = sortByTraversal(stageBuilds, getStageDirection(buildOrder, stage));
       if (
-        buildOrder.buildChainMode === BuildChainMode.DEFAULT_ENCODER &&
+        buildOrder.buildChainMode === BuildChainMode.ALLOW_DEFERRAL &&
         buildOrder.preserveSourceOrder
       ) {
         for (const configRun of getConfigRuns(stageBuilds)) {
@@ -183,7 +183,7 @@ export class Structure {
       }
 
       const configGroupSource =
-        buildOrder.buildChainMode === BuildChainMode.DEFAULT_ENCODER
+        buildOrder.buildChainMode === BuildChainMode.ALLOW_DEFERRAL
           ? stageBuilds
           : sortedStageBuilds;
 
@@ -205,12 +205,12 @@ export class Structure {
       case BuildChainMode.STRICT_TRAVERSAL:
         for (const chain of createStrictChains(builds)) addBuildCommand(commands, chain);
         break;
-      case BuildChainMode.DEFAULT_ENCODER: {
+      case BuildChainMode.ALLOW_DEFERRAL: {
         const first = builds[0];
         if (!first) return;
         const stage = getBuildStageOfItem(buildOrder, first.item);
         const sortedBuilds = sortByTraversal(builds, getStageDirection(buildOrder, stage));
-        for (const chain of createDefaultEncoderChains(sortedBuilds)) addBuildCommand(commands, chain);
+        for (const chain of createDeferralChains(sortedBuilds)) addBuildCommand(commands, chain);
         break;
       }
       case BuildChainMode.GROUP_BY_ITEM:
@@ -331,7 +331,7 @@ function createStrictChains(builds: StructureBuild[]): GroupedBuildChain[] {
   return chains;
 }
 
-function createDefaultEncoderChains(builds: StructureBuild[]): GroupedBuildChain[] {
+function createDeferralChains(builds: StructureBuild[]): GroupedBuildChain[] {
   const chains: GroupedBuildChain[] = [];
   const remaining = [...builds];
 

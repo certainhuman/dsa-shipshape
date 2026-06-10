@@ -178,9 +178,9 @@ function resolveBuildChainMode(options: BuildOrderOptions): BuildChainMode {
   if (options.respectTraversalOrderForBuildChains !== undefined) {
     return options.respectTraversalOrderForBuildChains
       ? BuildChainMode.STRICT_TRAVERSAL
-      : BuildChainMode.DEFAULT_ENCODER;
+      : BuildChainMode.ALLOW_DEFERRAL;
   }
-  return options.buildChainMode ?? BuildChainMode.DEFAULT_ENCODER;
+  return options.buildChainMode ?? BuildChainMode.ALLOW_DEFERRAL;
 }
 
 function cloneStages(stages: StageItems): StageItems {

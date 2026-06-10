@@ -7,6 +7,7 @@ These examples cover the common ways to use `dsa-shipshape`.
 ```ts
 import { decodeBlueprint } from "dsa-shipshape";
 
+// `code` may be raw base64 or include the `DSA:` prefix.
 const blueprint = decodeBlueprint(code);
 
 console.log(blueprint.width, blueprint.height);
@@ -18,6 +19,7 @@ console.log(blueprint.commands.length);
 ```ts
 import { encodeBlueprint } from "dsa-shipshape";
 
+// Include the prefix when you want a complete shareable DSA string.
 const code = encodeBlueprint(blueprint, { prefix: true });
 ```
 
@@ -32,10 +34,12 @@ import {
 
 const ship = new Structure(16, 10);
 
+// Place individual items at x/y blueprint coordinates.
 ship.placeItem(BuildableIds.IRON_BLOCK, 2, 2);
 ship.placeItem(BuildableIds.IRON_BLOCK, 3, 2);
 ship.placeItem(BuildableIds.CARGO_HATCH, 4, 2);
 
+// Convert placements into blueprint commands, then encode them.
 const code = encodeBlueprint(ship.toBlueprint(), { prefix: true });
 ```
 
@@ -49,6 +53,7 @@ import {
 
 const ship = new Structure(30, 12);
 
+// Add iron blocks from x = 2 through x = 12 on row y = 5.
 for (let x = 2; x <= 12; x += 1) {
   ship.placeItem(BuildableIds.IRON_BLOCK, x, 5);
 }
@@ -66,6 +71,7 @@ import {
 const ship = new Structure(20, 12);
 
 ship.placeItem(BuildableIds.IRON_BLOCK, 8, 5, {
+  // Use named shape IDs instead of hard-coding numbers.
   shape: BlockShape.Half.Top
 });
 ```
@@ -84,6 +90,7 @@ import {
 const ship = new Structure(20, 12);
 
 ship.placeItem(BuildableIds.LOADER, 6, 4, {
+  // Configs apply to the placed loader.
   configs: [
     loaderConfig({
       pickPosition: AdjacentPosition.LEFT_MIDDLE,
@@ -111,6 +118,7 @@ const ship = new Structure(20, 12);
 
 ship.placeItem(BuildableIds.CARGO_HATCH, 8, 4, {
   configs: [
+    // Allow only the listed filter item.
     filterConfig(FilterType.ALLOW_FILTER_ONLY),
     filterItemsConfig(BuildableIds.IRON_BLOCK)
   ]
@@ -132,6 +140,7 @@ const ship = new Structure(20, 12);
 ship.placeItem(BuildableIds.NAV_UNIT, 10, 5, {
   configs: [
     navUnitConfig({
+      // Destination constants avoid relying on raw overworld IDs.
       destinationIndex: NavDestinationIds.FALCON,
       warpActive: true
     })
@@ -147,6 +156,7 @@ import {
   navDestinationName
 } from "dsa-shipshape";
 
+// Convert in either direction when working with saved nav config values.
 const falconId = navDestinationId("FALCON");
 const name = navDestinationName(10);
 ```
@@ -161,6 +171,7 @@ import {
 
 const ship = new Structure(20, 12);
 
+// placeItem returns an editing ID that can be used later.
 const id = ship.placeItem(BuildableIds.CARGO_HATCH, 5, 5);
 ship.removeItem(id);
 ```
@@ -176,6 +187,7 @@ import {
 const ship = new Structure(20, 12);
 ship.placeItem(BuildableIds.CARGO_HATCH, 5, 5);
 
+// Return a complete build object. Spread keeps id, item, y, shape, configs, and priority.
 ship.mapBuilds((build) => ({
   ...build,
   x: build.x + 1
@@ -198,6 +210,7 @@ ship.placeItem(BuildableIds.STARTER_CARGO_HATCH, 3, 2);
 ship.placeItem(BuildableIds.CARGO_HATCH, 4, 2);
 
 const order = createBuildOrder({
+  // Prefer traversal order over compacting compatible commands together.
   buildChainMode: BuildChainMode.STRICT_TRAVERSAL
 });
 
@@ -215,6 +228,7 @@ import {
 try {
   decodeBlueprint(code);
 } catch (error) {
+  // Known parse/validation failures use DsaBpError.
   if (error instanceof DsaBpError) {
     console.error(error.code);
   } else {

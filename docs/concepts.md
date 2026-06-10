@@ -111,7 +111,7 @@ Use `createBuildOrder()` and helpers such as `withItems()`, `withoutItems()`, an
 
 `BuildChainMode` controls how placed items are compacted into build commands:
 
-- `DEFAULT_ENCODER`: compact compatible items while following the default encoder behavior.
+- `ALLOW_DEFERRAL`: follow traversal order between chains, while allowing compatible later placements to be deferred into the current chain when possible.
 - `STRICT_TRAVERSAL`: preserve traversal order more strictly, even if it creates more commands.
 - `GROUP_BY_ITEM`: group by item and shape before creating chains.
 

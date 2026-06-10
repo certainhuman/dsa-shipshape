@@ -55,7 +55,7 @@ describe("Structure", () => {
     });
   });
 
-  it("keeps compatible source rows chained in default encoder mode", () => {
+  it("keeps compatible source rows chained when deferral is allowed", () => {
     const structure = new Structure(50, 16);
     structure.placeItem(BuildableIds.LOADER, 19, 9);
     structure.placeItem(BuildableIds.LOADER, 21, 9);
