@@ -196,7 +196,7 @@ The library validates blueprint bounds before returning decoded data or encoded 
 ## More Docs
 
 - [Concepts](docs/concepts.md)
-- [Recipes](docs/recipes.md)
+- [API Guide](docs/api-guide.md)
 
 ## Development
 
