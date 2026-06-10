@@ -88,7 +88,7 @@ Placed items have stable IDs inside a `Structure` instance. These IDs are editin
 
 ## Items
 
-Use `ItemIds` for known Deep Space Airships item IDs, including resources, ammo, equipment, packaged buildables, and other items used by configs such as filters. These values are generated from Drednot's live item schema and may need updates if the game schema changes.
+Use `ItemIds` for game item IDs for configs such as filters. These values are generated from Drednot's live item schema and may need updates if the game schema changes.
 
 The package also exports:
 
@@ -104,10 +104,10 @@ Use `isKnownBlockShapeId(shape)` to check whether a number is in the known shape
 
 ## Build Order
 
-`Structure.toBlueprint()` groups placed items into staged build commands. The default order is intended to produce practical DSA build sequences:
+`Structure.toBlueprint()` groups placed items into staged build commands. The default order is intended to match the game's default build order:
 
-1. Blocks and basic structure.
-2. Weapons, fabs, helm, comms, recycler, projector, tank, and MSU.
+1. Tiled blocks.
+2. Cannons, fabs, helm, comms, recycler, projector, tank, and MSU.
 3. Loader, pusher, generator, cargo ejector, and nav unit.
 4. Expando box.
 5. Cargo hatch.
@@ -116,7 +116,7 @@ Use `createBuildOrder()` and helpers such as `withItems()`, `withoutItems()`, an
 
 `BuildChainMode` controls how placed items are compacted into build commands:
 
-- `ALLOW_DEFERRAL`: follow traversal order between chains, while allowing compatible later placements to be deferred into the current chain when possible.
+- `ALLOW_DEFERRAL`: allows passing over builds that are next in the build traversal direction and deferring them to the next chain to allow chaining valid builds that are past them. It still follows traversal order between chains and will not chain if traversal order forbids it, such as when traversing right to left or in columns.
 - `STRICT_TRAVERSAL`: preserve traversal order more strictly, even if it creates more commands.
 - `GROUP_BY_ITEM`: group by item and shape before creating chains.
 
@@ -126,4 +126,4 @@ Use `createBuildOrder()` and helpers such as `withItems()`, `withoutItems()`, an
 
 ## Errors
 
-The library throws `DsaBpError` for known validation and serialization failures. Check `error.code` to distinguish size limits, invalid blueprints, and invalid config payloads.
+The library throws `ShipShapeError` for known validation and serialization failures. Check `error.code` to distinguish size limits, invalid blueprints, and invalid config payloads.

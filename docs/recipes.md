@@ -228,15 +228,15 @@ const blueprint = ship.toBlueprint(order);
 
 ```ts
 import {
-  DsaBpError,
+  ShipShapeError,
   Blueprint
 } from "dsa-shipshape";
 
 try {
   Blueprint.decode(code);
 } catch (error) {
-  // Known parse/validation failures use DsaBpError.
-  if (error instanceof DsaBpError) {
+  // Known parse/validation failures use ShipShapeError.
+  if (error instanceof ShipShapeError) {
     console.error(error.code);
   } else {
     throw error;

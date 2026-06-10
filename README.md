@@ -167,15 +167,15 @@ const blueprint = ship.toBlueprint(order);
 
 ## Error Handling
 
-Parsing and encoding errors throw `DsaBpError`.
+Parsing and encoding errors throw `ShipShapeError`.
 
 ```ts
-import { DsaBpError, Blueprint } from "dsa-shipshape";
+import { ShipShapeError, Blueprint } from "dsa-shipshape";
 
 try {
   Blueprint.decode(code);
 } catch (error) {
-  if (error instanceof DsaBpError) {
+  if (error instanceof ShipShapeError) {
     console.error(error.code, error.message);
   } else {
     throw error;
