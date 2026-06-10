@@ -75,7 +75,7 @@ The helpers in `configs.ts` create supported configuration objects:
 
 ```ts
 const structure = Structure.fromBlueprint(blueprint);
-const id = structure.placeItem(BuildableIds.CARGO_HATCH, 2, 3);
+const id = structure.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 2, 3);
 structure.configureItem(id, []);
 const nextBlueprint = structure.toBlueprint();
 ```
@@ -84,12 +84,13 @@ Placed items have stable IDs inside a `Structure` instance. These IDs are editin
 
 ## Items
 
-Use `BuildableIds` for known Deep Space Airships item IDs. The package also exports:
+Use `ItemIds` for known Deep Space Airships item IDs, including resources, ammo, equipment, packaged buildables, and other items used by configs such as filters. These values are generated from Drednot's live item schema and may need updates if the game schema changes.
 
-- `BUILDABLE_ITEM_IDS`: item IDs known to be buildable.
-- `RCD_COMPATIBLE_ITEM_IDS`: items commonly compatible with RCD-style building.
+The package also exports:
 
-Unknown numeric item IDs can still be used where the API accepts `number`, but helper lists and default build order only include known IDs.
+- `ITEM_IDS`: all known item IDs from `ItemIds`.
+
+Unknown numeric item IDs can still be used where the API accepts `number`, but the default build order only includes known buildable item IDs from `ItemIds`.
 
 ## Shapes
 
@@ -117,7 +118,7 @@ Use `createBuildOrder()` and helpers such as `withItems()`, `withoutItems()`, an
 
 ## Navigation Destinations
 
-`NavDestinationIds`, `navDestinationId()`, and `navDestinationName()` map known overworld navigation destination names and IDs. These values come from the game and may need updates if Deep Space Airships changes its destination IDs.
+`NavDestinationIds` exposes known overworld navigation destination IDs for nav unit configs. These values come from the game and may need updates if Deep Space Airships changes its destination IDs.
 
 ## Errors
 

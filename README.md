@@ -16,15 +16,15 @@ Create a small blueprint and encode it back to a DSA string:
 
 ```ts
 import {
-  BuildableIds,
+  ItemIds,
   Structure,
   encodeBlueprint
 } from "dsa-shipshape";
 
 const ship = new Structure(10, 10);
 
-ship.placeItem(BuildableIds.CARGO_HATCH, 2, 3);
-ship.placeItem(BuildableIds.IRON_BLOCK, 4, 3);
+ship.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 2, 3);
+ship.placeItem(ItemIds.IRON_BLOCK, 4, 3);
 
 const blueprint = ship.toBlueprint();
 const code = encodeBlueprint(blueprint, { prefix: true });
@@ -36,7 +36,7 @@ Decode, edit, and re-encode an existing blueprint:
 
 ```ts
 import {
-  BuildableIds,
+  ItemIds,
   Structure,
   decodeBlueprint,
   encodeBlueprint
@@ -45,7 +45,7 @@ import {
 const blueprint = decodeBlueprint(inputCode);
 const ship = Structure.fromBlueprint(blueprint);
 
-ship.placeItem(BuildableIds.LOADER, 5, 5);
+ship.placeItem(ItemIds.LOADER_PACKAGED, 5, 5);
 
 const outputCode = encodeBlueprint(ship.toBlueprint(), { prefix: true });
 ```
@@ -58,15 +58,15 @@ Use `decodeBlueprint` and `encodeBlueprint` when you want direct access to seria
 
 ```ts
 import {
-  BuildableIds,
+  ItemIds,
   createBlueprint,
   createBuildCommand,
   encodeBlueprint
 } from "dsa-shipshape";
 
 const blueprint = createBlueprint(20, 12, [
-  createBuildCommand(2, 3, BuildableIds.CARGO_HATCH),
-  createBuildCommand(4, 3, BuildableIds.IRON_BLOCK, [5, 6])
+  createBuildCommand(2, 3, ItemIds.CARGO_HATCH_PACKAGED),
+  createBuildCommand(4, 3, ItemIds.IRON_BLOCK, [5, 6])
 ]);
 
 const code = encodeBlueprint(blueprint, { prefix: true });
@@ -78,18 +78,18 @@ const code = encodeBlueprint(blueprint, { prefix: true });
 
 ```ts
 import {
-  BuildableIds,
+  ItemIds,
   Structure,
   decodeBlueprint
 } from "dsa-shipshape";
 
 const ship = Structure.fromBlueprint(decodeBlueprint(inputCode));
 
-const id = ship.placeItem(BuildableIds.CARGO_HATCH, 12, 4);
+const id = ship.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 12, 4);
 ship.configureItem(id, []);
 ship.removeItem(id);
 
-console.log(ship.count(BuildableIds.CARGO_HATCH));
+console.log(ship.count(ItemIds.CARGO_HATCH_PACKAGED));
 ```
 
 ### Configure Items
@@ -99,7 +99,7 @@ Configuration helpers create the plain config objects expected by blueprint comm
 ```ts
 import {
   AdjacentPosition,
-  BuildableIds,
+  ItemIds,
   FilterType,
   Priority,
   Structure,
@@ -110,7 +110,7 @@ import {
 
 const ship = new Structure(20, 20);
 
-ship.placeItem(BuildableIds.LOADER, 10, 10, {
+ship.placeItem(ItemIds.LOADER_PACKAGED, 10, 10, {
   configs: [
     loaderConfig({
       pickPosition: AdjacentPosition.TOP_LEFT,
@@ -118,7 +118,7 @@ ship.placeItem(BuildableIds.LOADER, 10, 10, {
       priority: Priority.HIGH
     }),
     filterConfig(FilterType.ALLOW_FILTER_ONLY),
-    filterItemsConfig(BuildableIds.CARGO_HATCH)
+    filterItemsConfig(ItemIds.CARGO_HATCH_PACKAGED)
   ]
 });
 ```
@@ -130,13 +130,13 @@ Use `BlockShape` instead of hard-coding known block shape IDs.
 ```ts
 import {
   BlockShape,
-  BuildableIds,
+  ItemIds,
   Structure
 } from "dsa-shipshape";
 
 const ship = new Structure(12, 12);
 
-ship.placeItem(BuildableIds.IRON_BLOCK, 4, 4, {
+ship.placeItem(ItemIds.IRON_BLOCK, 4, 4, {
   shape: BlockShape.Ramp.TopLeft
 });
 ```

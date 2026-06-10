@@ -27,7 +27,7 @@ const code = encodeBlueprint(blueprint, { prefix: true });
 
 ```ts
 import {
-  BuildableIds,
+  ItemIds,
   Structure,
   encodeBlueprint
 } from "dsa-shipshape";
@@ -35,9 +35,9 @@ import {
 const ship = new Structure(16, 10);
 
 // Place individual items at x/y blueprint coordinates.
-ship.placeItem(BuildableIds.IRON_BLOCK, 2, 2);
-ship.placeItem(BuildableIds.IRON_BLOCK, 3, 2);
-ship.placeItem(BuildableIds.CARGO_HATCH, 4, 2);
+ship.placeItem(ItemIds.IRON_BLOCK, 2, 2);
+ship.placeItem(ItemIds.IRON_BLOCK, 3, 2);
+ship.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 4, 2);
 
 // Convert placements into blueprint commands, then encode them.
 const code = encodeBlueprint(ship.toBlueprint(), { prefix: true });
@@ -47,7 +47,7 @@ const code = encodeBlueprint(ship.toBlueprint(), { prefix: true });
 
 ```ts
 import {
-  BuildableIds,
+  ItemIds,
   Structure
 } from "dsa-shipshape";
 
@@ -55,7 +55,7 @@ const ship = new Structure(30, 12);
 
 // Add iron blocks from x = 2 through x = 12 on row y = 5.
 for (let x = 2; x <= 12; x += 1) {
-  ship.placeItem(BuildableIds.IRON_BLOCK, x, 5);
+  ship.placeItem(ItemIds.IRON_BLOCK, x, 5);
 }
 ```
 
@@ -64,13 +64,13 @@ for (let x = 2; x <= 12; x += 1) {
 ```ts
 import {
   BlockShape,
-  BuildableIds,
+  ItemIds,
   Structure
 } from "dsa-shipshape";
 
 const ship = new Structure(20, 12);
 
-ship.placeItem(BuildableIds.IRON_BLOCK, 8, 5, {
+ship.placeItem(ItemIds.IRON_BLOCK, 8, 5, {
   // Use named shape IDs instead of hard-coding numbers.
   shape: BlockShape.Half.Top
 });
@@ -81,7 +81,7 @@ ship.placeItem(BuildableIds.IRON_BLOCK, 8, 5, {
 ```ts
 import {
   AdjacentPosition,
-  BuildableIds,
+  ItemIds,
   Priority,
   Structure,
   loaderConfig
@@ -89,7 +89,7 @@ import {
 
 const ship = new Structure(20, 12);
 
-ship.placeItem(BuildableIds.LOADER, 6, 4, {
+ship.placeItem(ItemIds.LOADER_PACKAGED, 6, 4, {
   // Configs apply to the placed loader.
   configs: [
     loaderConfig({
@@ -107,7 +107,7 @@ ship.placeItem(BuildableIds.LOADER, 6, 4, {
 
 ```ts
 import {
-  BuildableIds,
+  ItemIds,
   FilterType,
   Structure,
   filterConfig,
@@ -116,11 +116,11 @@ import {
 
 const ship = new Structure(20, 12);
 
-ship.placeItem(BuildableIds.CARGO_HATCH, 8, 4, {
+ship.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 8, 4, {
   configs: [
     // Allow only the listed filter item.
     filterConfig(FilterType.ALLOW_FILTER_ONLY),
-    filterItemsConfig(BuildableIds.IRON_BLOCK)
+    filterItemsConfig(ItemIds.IRON_BLOCK)
   ]
 });
 ```
@@ -129,7 +129,7 @@ ship.placeItem(BuildableIds.CARGO_HATCH, 8, 4, {
 
 ```ts
 import {
-  BuildableIds,
+  ItemIds,
   NavDestinationIds,
   Structure,
   navUnitConfig
@@ -137,7 +137,7 @@ import {
 
 const ship = new Structure(20, 12);
 
-ship.placeItem(BuildableIds.NAV_UNIT, 10, 5, {
+ship.placeItem(ItemIds.NAVIGATION_UNIT_STARTER_PACKAGED, 10, 5, {
   configs: [
     navUnitConfig({
       // Destination constants avoid relying on raw overworld IDs.
@@ -148,31 +148,18 @@ ship.placeItem(BuildableIds.NAV_UNIT, 10, 5, {
 });
 ```
 
-## Map Nav Destination Names and IDs
-
-```ts
-import {
-  navDestinationId,
-  navDestinationName
-} from "dsa-shipshape";
-
-// Convert in either direction when working with saved nav config values.
-const falconId = navDestinationId("FALCON");
-const name = navDestinationName(10);
-```
-
 ## Remove Items
 
 ```ts
 import {
-  BuildableIds,
+  ItemIds,
   Structure
 } from "dsa-shipshape";
 
 const ship = new Structure(20, 12);
 
 // placeItem returns an editing ID that can be used later.
-const id = ship.placeItem(BuildableIds.CARGO_HATCH, 5, 5);
+const id = ship.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 5, 5);
 ship.removeItem(id);
 ```
 
@@ -180,12 +167,12 @@ ship.removeItem(id);
 
 ```ts
 import {
-  BuildableIds,
+  ItemIds,
   Structure
 } from "dsa-shipshape";
 
 const ship = new Structure(20, 12);
-ship.placeItem(BuildableIds.CARGO_HATCH, 5, 5);
+ship.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 5, 5);
 
 // Return a complete build object. Spread keeps id, item, y, shape, configs, and priority.
 ship.mapBuilds((build) => ({
@@ -199,15 +186,15 @@ ship.mapBuilds((build) => ({
 ```ts
 import {
   BuildChainMode,
-  BuildableIds,
+  ItemIds,
   Structure,
   createBuildOrder
 } from "dsa-shipshape";
 
 const ship = new Structure(20, 12);
-ship.placeItem(BuildableIds.CARGO_HATCH, 2, 2);
-ship.placeItem(BuildableIds.STARTER_CARGO_HATCH, 3, 2);
-ship.placeItem(BuildableIds.CARGO_HATCH, 4, 2);
+ship.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 2, 2);
+ship.placeItem(ItemIds.CARGO_HATCH_STARTER_PACKAGED, 3, 2);
+ship.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 4, 2);
 
 const order = createBuildOrder({
   // Prefer traversal order over compacting compatible commands together.

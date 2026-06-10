@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  BuildableIds,
+  ItemIds,
   decodeBlueprint,
   encodeBlueprint,
   FilterType,
@@ -18,7 +18,7 @@ describe("blueprint encoding", () => {
         type: "build",
         x: 2,
         y: 3,
-        item: BuildableIds.CARGO_HATCH,
+        item: ItemIds.CARGO_HATCH_PACKAGED,
         bits: 0b101n,
         shape: 0
       }

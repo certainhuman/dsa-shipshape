@@ -37,12 +37,13 @@ export {
   type PusherConfigOptions
 } from "./configs";
 export {
-  BUILDABLE_ITEM_IDS,
-  BuildableIds,
+  ITEM_IDS,
+  ItemIds,
   MAX_BUILD_COMMANDS,
   MAX_DECOMPRESSED_SIZE,
   MAX_WRAPPER_SIZE,
-  RCD_COMPATIBLE_ITEM_IDS
+  NavDestinationIds,
+  type ItemId
 } from "./constants";
 export {
   AdjacentPosition,
@@ -55,13 +56,6 @@ export {
   TraversalDirection
 } from "./enums";
 export * from "./errors";
-export {
-  NavDestinationIds,
-  navDestinationId,
-  navDestinationName,
-  type NavDestinationId,
-  type NavDestinationName
-} from "./nav";
 export {
   BlockShape,
   KNOWN_BLOCK_SHAPE_IDS,
