@@ -5,6 +5,11 @@ import { parseCommand, serializeCommand } from "./commands";
 import { DsaBpError } from "./errors";
 import type { Blueprint, BlueprintCommand } from "./types";
 
+/**
+ * Decodes a Deep Space Airships blueprint string into command data.
+ *
+ * The input may be raw base64 or prefixed with `DSA:`.
+ */
 export function decodeBlueprint(input: string): Blueprint {
   const base64 = input.startsWith("DSA:") ? input.slice(4) : input;
   if (base64.length > MAX_WRAPPER_SIZE) {
@@ -50,6 +55,11 @@ export function decodeBlueprint(input: string): Blueprint {
   return { version, width, height, commands };
 }
 
+/**
+ * Encodes command data into a compressed Deep Space Airships blueprint string.
+ *
+ * Pass `{ prefix: true }` to include the `DSA:` prefix.
+ */
 export function encodeBlueprint(blueprint: Blueprint, options: { prefix?: boolean } = {}): string {
   const writer = new BinaryWriter();
   writer.beginArray();
@@ -72,6 +82,9 @@ export function encodeBlueprint(blueprint: Blueprint, options: { prefix?: boolea
   return options.prefix ? `DSA:${base64}` : base64;
 }
 
+/**
+ * Creates a blueprint object from dimensions and commands.
+ */
 export function createBlueprint(width: number, height: number, commands: readonly BlueprintCommand[]): Blueprint {
   return {
     version: 0,

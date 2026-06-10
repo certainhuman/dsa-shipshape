@@ -45,6 +45,9 @@ export interface NavUnitConfigOptions {
   warpOnNoCaptains?: boolean;
 }
 
+/**
+ * Creates a loader configuration object with in-game defaults.
+ */
 export function loaderConfig(options: LoaderConfigOptions): LoaderConfig {
   return {
     type: "config_loader",
@@ -58,6 +61,9 @@ export function loaderConfig(options: LoaderConfigOptions): LoaderConfig {
   };
 }
 
+/**
+ * Creates a pusher configuration object with in-game defaults.
+ */
 export function pusherConfig(options: PusherConfigOptions = {}): PusherConfig {
   return {
     type: "config_pusher",
@@ -70,6 +76,9 @@ export function pusherConfig(options: PusherConfigOptions = {}): PusherConfig {
   };
 }
 
+/**
+ * Creates a nav unit configuration object with in-game defaults.
+ */
 export function navUnitConfig(options: NavUnitConfigOptions = {}): NavUnitConfig {
   return {
     type: "config_nav_unit",
@@ -81,18 +90,30 @@ export function navUnitConfig(options: NavUnitConfigOptions = {}): NavUnitConfig
   };
 }
 
+/**
+ * Creates a fixed cardinal direction angle configuration.
+ */
 export function fixedAngleConfig(direction: Direction): FixedAngleConfig {
   return { type: "angle_fixed", direction };
 }
 
+/**
+ * Creates a numeric angle configuration.
+ */
 export function angleConfig(angle: number): AngleConfig {
   return { type: "angle", angle };
 }
 
+/**
+ * Creates a filter mode configuration.
+ */
 export function filterConfig(filterType: FilterType): FilterConfig {
   return { type: "filter_config", filterType };
 }
 
+/**
+ * Creates a three-slot item filter configuration. Empty slots default to `0`.
+ */
 export function filterItemsConfig(
   item1 = 0,
   item2 = 0,

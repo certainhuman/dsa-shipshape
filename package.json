@@ -1,7 +1,23 @@
 {
   "name": "dsa-shipshape",
   "version": "0.1.0",
-  "description": "TypeScript utilities for parsing, editing, and encoding Drednot Shipyard Architect blueprints.",
+  "description": "TypeScript utilities for parsing, editing, and encoding Deep Space Airships blueprints for drednot.io.",
+  "homepage": "https://github.com/certainhuman/dsa-shipshape#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/certainhuman/dsa-shipshape.git"
+  },
+  "bugs": {
+    "url": "https://github.com/certainhuman/dsa-shipshape/issues"
+  },
+  "keywords": [
+    "deep-space-airships",
+    "drednot",
+    "drednot.io",
+    "blueprint",
+    "dsa",
+    "typescript"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -14,7 +30,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "docs"
   ],
   "scripts": {
     "build": "tsup",

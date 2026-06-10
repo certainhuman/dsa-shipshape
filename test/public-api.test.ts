@@ -4,6 +4,8 @@ import {
   FilterType,
   NavDestinationIds,
   Priority,
+  BuildableIds,
+  createBuildCommand,
   filterConfig,
   filterItemsConfig,
   loaderConfig,
@@ -48,5 +50,16 @@ describe("public helpers", () => {
     expect(navDestinationName(10)).toBe("HUMMINGBIRD");
     expect(navDestinationId("FALCON")).toBe(50);
     expect(navDestinationName(999)).toBeUndefined();
+  });
+
+  it("creates build commands from a starting x and additional x positions", () => {
+    expect(createBuildCommand(4, 3, BuildableIds.IRON_BLOCK, [5, 6])).toEqual({
+      type: "build",
+      x: 4,
+      y: 3,
+      item: BuildableIds.IRON_BLOCK,
+      bits: 0b111n,
+      shape: 0
+    });
   });
 });

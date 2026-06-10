@@ -49,6 +49,12 @@ interface ConfigRun {
   builds: StructureBuild[];
 }
 
+/**
+ * Editable view of a Deep Space Airships blueprint.
+ *
+ * `Structure` expands build commands into individual placements, supports
+ * programmatic edits, then compacts placements back into blueprint commands.
+ */
 export class Structure {
   private builds: StructureBuild[] = [];
   private buildsById = new Map<number, StructureBuild>();
@@ -59,6 +65,9 @@ export class Structure {
     public readonly height: number
   ) {}
 
+  /**
+   * Creates an editable structure from decoded blueprint data.
+   */
   static fromBlueprint(blueprint: Blueprint): Structure {
     const structure = new Structure(blueprint.width, blueprint.height);
     let currentConfigs: ConfigData[] = [];
@@ -80,6 +89,9 @@ export class Structure {
     return structure;
   }
 
+  /**
+   * Places one item and returns its editing ID.
+   */
   placeItem(item: number, x: number, y: number, options: PlaceItemOptions = {}): number {
     if (x < -0.5 || x > this.width - 0.5 || y < -0.5 || y > this.height - 0.5) {
       throw new DsaBpError("INVALID_BLUEPRINT", "Item placement out of bounds");
@@ -98,6 +110,9 @@ export class Structure {
     return build.id;
   }
 
+  /**
+   * Removes a placed item by editing ID.
+   */
   removeItem(id: number): boolean {
     const build = this.buildsById.get(id);
     if (!build) return false;
@@ -107,29 +122,47 @@ export class Structure {
     return true;
   }
 
+  /**
+   * Replaces the configuration list for a placed item.
+   */
   configureItem(id: number, configs: readonly ConfigData[]): void {
     const build = this.buildsById.get(id);
     if (build) build.configs = [...configs];
   }
 
+  /**
+   * Gets a copy of a placed item by editing ID.
+   */
   getBuild(id: number): StructureBuild | undefined {
     const build = this.buildsById.get(id);
     return build ? cloneBuild(build) : undefined;
   }
 
+  /**
+   * Gets copies of all placed items.
+   */
   getBuilds(): StructureBuild[] {
     return this.builds.map(cloneBuild);
   }
 
+  /**
+   * Counts placed items with a matching item ID.
+   */
   count(item: number): number {
     return this.builds.filter((build) => build.item === item).length;
   }
 
+  /**
+   * Replaces every placed item with the result of a mapper function.
+   */
   mapBuilds(mapper: (build: StructureBuild) => StructureBuild): void {
     this.builds = this.builds.map((build) => mapper(cloneBuild(build)));
     this.rebuildBuildIndex();
   }
 
+  /**
+   * Compacts placed items into blueprint commands.
+   */
   toBlueprint(buildOrder: BuildOrder = DEFAULT_BUILD_ORDER): Blueprint {
     const commands: BlueprintCommand[] = [];
 

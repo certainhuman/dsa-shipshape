@@ -74,6 +74,9 @@ export const DEFAULT_STAGE_DIRECTIONS: StageDirections = {
   4: TraversalDirection.NONE
 };
 
+/**
+ * Creates a build order used by `Structure.toBlueprint()`.
+ */
 export function createBuildOrder(options: BuildOrderOptions = {}): BuildOrder {
   const buildChainMode = resolveBuildChainMode(options);
   const order: BuildOrder = {
@@ -93,6 +96,9 @@ export function createBuildOrder(options: BuildOrderOptions = {}): BuildOrder {
 
 export const DEFAULT_BUILD_ORDER = createBuildOrder();
 
+/**
+ * Returns a copy of a build order with the given item IDs removed from all stages.
+ */
 export function withoutItems(order: BuildOrder, ...itemIds: number[]): BuildOrder {
   const remove = new Set(itemIds);
   const stages: StageItems = Object.fromEntries(
@@ -104,6 +110,9 @@ export function withoutItems(order: BuildOrder, ...itemIds: number[]): BuildOrde
   return createBuildOrder({ ...order, stages, stageDirections: order.stageDirections });
 }
 
+/**
+ * Returns a copy of a build order with compatible item IDs added to a stage.
+ */
 export function withItems(order: BuildOrder, stage: number, ...itemIds: number[]): BuildOrder {
   const stages = cloneStages(order.stages);
   const compatible = itemIds.filter((itemId) =>
@@ -119,6 +128,9 @@ export function withItems(order: BuildOrder, stage: number, ...itemIds: number[]
   return createBuildOrder({ ...order, stages, stageDirections });
 }
 
+/**
+ * Returns a copy of a build order with a traversal direction assigned to a stage.
+ */
 export function withStageDirection(
   order: BuildOrder,
   stage: number,
@@ -130,10 +142,16 @@ export function withStageDirection(
   });
 }
 
+/**
+ * Gets the item IDs assigned to a build stage.
+ */
 export function getItemsInStage(order: BuildOrder, stage: number): readonly number[] {
   return order.stages[stage] ?? [];
 }
 
+/**
+ * Gets the stage number for an item ID, or `-1` when the item is not staged.
+ */
 export function getBuildStageOfItem(order: BuildOrder, itemId: number): number {
   for (const stage of Object.keys(order.stages).map(Number)) {
     if ((order.stages[stage] ?? []).includes(itemId)) return stage;
@@ -141,10 +159,16 @@ export function getBuildStageOfItem(order: BuildOrder, itemId: number): number {
   return -1;
 }
 
+/**
+ * Gets the traversal direction for a stage.
+ */
 export function getStageDirection(order: BuildOrder, stage: number): TraversalDirection {
   return order.stageDirections[stage] ?? TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT;
 }
 
+/**
+ * Gets the highest stage number in a build order.
+ */
 export function numStages(order: BuildOrder): number {
   const stages = Object.keys(order.stages).map(Number);
   return stages.length === 0 ? 0 : Math.max(...stages);

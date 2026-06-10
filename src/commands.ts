@@ -40,6 +40,9 @@ export function serializeCommand(command: BlueprintCommand, writer: BinaryWriter
   writer.endArray();
 }
 
+/**
+ * Expands a build command bit mask into its concrete x positions.
+ */
 export function getBuildPositions(command: BuildCommand): number[] {
   const positions: number[] = [];
   for (let i = 0n; i < 64n; i++) {
@@ -50,16 +53,20 @@ export function getBuildPositions(command: BuildCommand): number[] {
   return positions;
 }
 
+/**
+ * Creates a build command for one or more positions on the same row.
+ *
+ * The `x` position is always included. Additional positions may be supplied
+ * to compact multiple placements into one command.
+ */
 export function createBuildCommand(
   x: number,
   y: number,
   item: number,
-  positions: readonly number[] = [x],
+  additionalPositions: readonly number[] = [],
   shape = 0
 ): BuildCommand {
-  if (positions.length === 0) {
-    throw new DsaBpError("INVALID_BLUEPRINT", "Build command must contain at least one position");
-  }
+  const positions = [x, ...additionalPositions];
 
   const baseX = Math.min(...positions);
   let bits = 0n;
