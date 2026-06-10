@@ -1,7 +1,5 @@
 export {
-  createBlueprint,
-  decodeBlueprint,
-  encodeBlueprint
+  Blueprint
 } from "./blueprint";
 export {
   DEFAULT_BUILD_ORDER,

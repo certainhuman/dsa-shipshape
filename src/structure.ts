@@ -79,7 +79,7 @@ export class Structure {
       }
 
       for (const x of getBuildPositions(command)) {
-        structure.placeItem(command.item, x, command.y, {
+        structure.place(command.item, x, command.y, {
           shape: command.shape,
           configs: [...currentConfigs]
         });
@@ -92,7 +92,7 @@ export class Structure {
   /**
    * Places one item and returns its editing ID.
    */
-  placeItem(item: number, x: number, y: number, options: PlaceItemOptions = {}): number {
+  place(item: number, x: number, y: number, options: PlaceItemOptions = {}): number {
     if (x < -0.5 || x > this.width - 0.5 || y < -0.5 || y > this.height - 0.5) {
       throw new ShipShapeError("INVALID_BLUEPRINT", "Item placement out of bounds");
     }
@@ -113,7 +113,7 @@ export class Structure {
   /**
    * Removes a placed item by editing ID.
    */
-  removeItem(id: number): boolean {
+  remove(id: number): boolean {
     const build = this.buildsById.get(id);
     if (!build) return false;
 
@@ -125,7 +125,7 @@ export class Structure {
   /**
    * Replaces the configuration list for a placed item.
    */
-  configureItem(id: number, configs: readonly ConfigData[]): void {
+  config(id: number, configs: readonly ConfigData[]): void {
     const build = this.buildsById.get(id);
     if (build) build.configs = [...configs];
   }
@@ -133,7 +133,7 @@ export class Structure {
   /**
    * Gets a copy of a placed item by editing ID.
    */
-  getBuild(id: number): StructureBuild | undefined {
+  get(id: number): StructureBuild | undefined {
     const build = this.buildsById.get(id);
     return build ? cloneBuild(build) : undefined;
   }
@@ -141,7 +141,7 @@ export class Structure {
   /**
    * Gets copies of all placed items.
    */
-  getBuilds(): StructureBuild[] {
+  getAll(): StructureBuild[] {
     return this.builds.map(cloneBuild);
   }
 
@@ -155,7 +155,7 @@ export class Structure {
   /**
    * Replaces every placed item with the result of a mapper function.
    */
-  mapBuilds(mapper: (build: StructureBuild) => StructureBuild): void {
+  map(mapper: (build: StructureBuild) => StructureBuild): void {
     this.builds = this.builds.map((build) => mapper(cloneBuild(build)));
     this.rebuildBuildIndex();
   }

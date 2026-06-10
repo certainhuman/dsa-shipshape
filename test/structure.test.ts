@@ -9,13 +9,13 @@ import {
 describe("Structure", () => {
   it("chains compatible builds within a configuration group", () => {
     const structure = new Structure(50, 16);
-    structure.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 2, 2, {
+    structure.place(ItemIds.CARGO_HATCH_PACKAGED, 2, 2, {
       configs: [{ type: "filter_config", filterType: FilterType.ALLOW_FILTER_ONLY }]
     });
-    structure.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 3, 2, {
+    structure.place(ItemIds.CARGO_HATCH_PACKAGED, 3, 2, {
       configs: [{ type: "filter_config", filterType: FilterType.ALLOW_FILTER_ONLY }]
     });
-    structure.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 5, 2, {
+    structure.place(ItemIds.CARGO_HATCH_PACKAGED, 5, 2, {
       configs: [{ type: "filter_config", filterType: FilterType.ALLOW_FILTER_ONLY }]
     });
 
@@ -38,9 +38,9 @@ describe("Structure", () => {
 
   it("can preserve strict traversal order for build chains", () => {
     const structure = new Structure(50, 16);
-    structure.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 2, 2);
-    structure.placeItem(ItemIds.CARGO_HATCH_STARTER_PACKAGED, 3, 2);
-    structure.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 4, 2);
+    structure.place(ItemIds.CARGO_HATCH_PACKAGED, 2, 2);
+    structure.place(ItemIds.CARGO_HATCH_STARTER_PACKAGED, 3, 2);
+    structure.place(ItemIds.CARGO_HATCH_PACKAGED, 4, 2);
 
     const order = createBuildOrder({ respectTraversalOrderForBuildChains: true });
     const hatchCommands = structure
@@ -57,11 +57,11 @@ describe("Structure", () => {
 
   it("keeps compatible source rows chained when deferral is allowed", () => {
     const structure = new Structure(50, 16);
-    structure.placeItem(ItemIds.LOADER_PACKAGED, 19, 9);
-    structure.placeItem(ItemIds.LOADER_PACKAGED, 21, 9);
-    structure.placeItem(ItemIds.LOADER_PACKAGED, 23, 9);
-    structure.placeItem(ItemIds.LOADER_PACKAGED, 25, 9);
-    structure.placeItem(ItemIds.LOADER_PACKAGED, 27, 9);
+    structure.place(ItemIds.LOADER_PACKAGED, 19, 9);
+    structure.place(ItemIds.LOADER_PACKAGED, 21, 9);
+    structure.place(ItemIds.LOADER_PACKAGED, 23, 9);
+    structure.place(ItemIds.LOADER_PACKAGED, 25, 9);
+    structure.place(ItemIds.LOADER_PACKAGED, 27, 9);
 
     const loaderCommand = structure
       .toBlueprint()

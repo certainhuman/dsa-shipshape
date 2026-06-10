@@ -18,16 +18,16 @@ Create a small blueprint and encode it back to a DSA string:
 import {
   ItemIds,
   Structure,
-  encodeBlueprint
+  Blueprint
 } from "dsa-shipshape";
 
 const ship = new Structure(10, 10);
 
-ship.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 2, 3);
-ship.placeItem(ItemIds.IRON_BLOCK, 4, 3);
+ship.place(ItemIds.CARGO_HATCH_PACKAGED, 2, 3);
+ship.place(ItemIds.IRON_BLOCK, 4, 3);
 
 const blueprint = ship.toBlueprint();
-const code = encodeBlueprint(blueprint, { prefix: true });
+const code = Blueprint.encode(blueprint, { prefix: true });
 
 console.log(code);
 ```
@@ -38,38 +38,36 @@ Decode, edit, and re-encode an existing blueprint:
 import {
   ItemIds,
   Structure,
-  decodeBlueprint,
-  encodeBlueprint
+  Blueprint
 } from "dsa-shipshape";
 
-const blueprint = decodeBlueprint(inputCode);
+const blueprint = Blueprint.decode(inputCode);
 const ship = Structure.fromBlueprint(blueprint);
 
-ship.placeItem(ItemIds.LOADER_PACKAGED, 5, 5);
+ship.place(ItemIds.LOADER_PACKAGED, 5, 5);
 
-const outputCode = encodeBlueprint(ship.toBlueprint(), { prefix: true });
+const outputCode = Blueprint.encode(ship.toBlueprint(), { prefix: true });
 ```
 
 ## Common Workflows
 
 ### Work With Raw Blueprint Commands
 
-Use `decodeBlueprint` and `encodeBlueprint` when you want direct access to serialized blueprint commands.
+Use `Blueprint.builder()` when you want to add raw blueprint commands in order.
 
 ```ts
 import {
   ItemIds,
-  createBlueprint,
-  createBuildCommand,
-  encodeBlueprint
+  Blueprint,
+  createBuildCommand
 } from "dsa-shipshape";
 
-const blueprint = createBlueprint(20, 12, [
-  createBuildCommand(2, 3, ItemIds.CARGO_HATCH_PACKAGED),
-  createBuildCommand(4, 3, ItemIds.IRON_BLOCK, [5, 6])
-]);
+const blueprint = Blueprint.builder(20, 12)
+  .command(createBuildCommand(2, 3, ItemIds.CARGO_HATCH_PACKAGED))
+  .command(createBuildCommand(4, 3, ItemIds.IRON_BLOCK, [5, 6]))
+  .toBlueprint();
 
-const code = encodeBlueprint(blueprint, { prefix: true });
+const code = Blueprint.encode(blueprint, { prefix: true });
 ```
 
 ### Edit With `Structure`
@@ -80,14 +78,14 @@ const code = encodeBlueprint(blueprint, { prefix: true });
 import {
   ItemIds,
   Structure,
-  decodeBlueprint
+  Blueprint
 } from "dsa-shipshape";
 
-const ship = Structure.fromBlueprint(decodeBlueprint(inputCode));
+const ship = Structure.fromBlueprint(Blueprint.decode(inputCode));
 
-const id = ship.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 12, 4);
-ship.configureItem(id, []);
-ship.removeItem(id);
+const id = ship.place(ItemIds.CARGO_HATCH_PACKAGED, 12, 4);
+ship.config(id, []);
+ship.remove(id);
 
 console.log(ship.count(ItemIds.CARGO_HATCH_PACKAGED));
 ```
@@ -110,7 +108,7 @@ import {
 
 const ship = new Structure(20, 20);
 
-ship.placeItem(ItemIds.LOADER_PACKAGED, 10, 10, {
+ship.place(ItemIds.LOADER_PACKAGED, 10, 10, {
   configs: [
     loaderConfig({
       pickPosition: AdjacentPosition.TOP_LEFT,
@@ -136,7 +134,7 @@ import {
 
 const ship = new Structure(12, 12);
 
-ship.placeItem(ItemIds.IRON_BLOCK, 4, 4, {
+ship.place(ItemIds.IRON_BLOCK, 4, 4, {
   shape: BlockShape.Ramp.TopLeft
 });
 ```
@@ -172,10 +170,10 @@ const blueprint = ship.toBlueprint(order);
 Parsing and encoding errors throw `DsaBpError`.
 
 ```ts
-import { DsaBpError, decodeBlueprint } from "dsa-shipshape";
+import { DsaBpError, Blueprint } from "dsa-shipshape";
 
 try {
-  decodeBlueprint(code);
+  Blueprint.decode(code);
 } catch (error) {
   if (error instanceof DsaBpError) {
     console.error(error.code, error.message);
@@ -193,7 +191,7 @@ The library validates blueprint bounds before returning decoded data or encoded 
 - Encoded wrappers are limited by `MAX_WRAPPER_SIZE`.
 - Decompressed blueprint data is limited by `MAX_DECOMPRESSED_SIZE`.
 - Blueprints are limited by `MAX_BUILD_COMMANDS`.
-- `Structure.placeItem()` accepts positions from `-0.5` through `width - 0.5` and `height - 0.5`, matching DSA coordinate behavior.
+- `Structure.place()` accepts positions from `-0.5` through `width - 0.5` and `height - 0.5`, matching DSA coordinate behavior.
 
 ## More Docs
 

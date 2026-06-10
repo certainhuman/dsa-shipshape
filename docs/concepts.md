@@ -9,9 +9,13 @@ Use `Blueprint` when you need exact command-level control. Use `Structure` when 
 
 ## Blueprint Strings
 
-`decodeBlueprint(input)` accepts a raw base64 blueprint string or a string with the `DSA:` prefix. It inflates and parses the encoded blueprint into a `Blueprint` object.
+`Blueprint.decode(input)` accepts a raw base64 blueprint string or a string with the `DSA:` prefix. It inflates and parses the encoded blueprint into a `Blueprint` object.
 
-`encodeBlueprint(blueprint)` serializes a `Blueprint` object back into the compressed base64 format. Pass `{ prefix: true }` to include the `DSA:` prefix in the returned string.
+`Blueprint.encode(blueprint)` serializes a `Blueprint` object back into the compressed base64 format. Pass `{ prefix: true }` to include the `DSA:` prefix in the returned string.
+
+`Blueprint.create(width, height, commands)` creates plain blueprint data from dimensions and raw commands.
+
+`Blueprint.builder(width, height)` creates a chainable builder for adding raw configuration commands with `.config(...)` and placement commands with `.place(...)`.
 
 ## Blueprint
 
@@ -75,8 +79,8 @@ The helpers in `configs.ts` create supported configuration objects:
 
 ```ts
 const structure = Structure.fromBlueprint(blueprint);
-const id = structure.placeItem(ItemIds.CARGO_HATCH_PACKAGED, 2, 3);
-structure.configureItem(id, []);
+const id = structure.place(ItemIds.CARGO_HATCH_PACKAGED, 2, 3);
+structure.config(id, []);
 const nextBlueprint = structure.toBlueprint();
 ```
 

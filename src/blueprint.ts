@@ -1,16 +1,45 @@
 import { deflateSync, inflateSync } from "fflate";
 import { BinaryReader, BinaryWriter } from "./binary";
 import { MAX_BUILD_COMMANDS, MAX_DECOMPRESSED_SIZE, MAX_WRAPPER_SIZE } from "./constants";
-import { parseCommand, serializeCommand } from "./commands";
+import { createBuildCommand, parseCommand, serializeCommand } from "./commands";
 import { ShipShapeError } from "./errors";
-import type { Blueprint, BlueprintCommand } from "./types";
+import type { Blueprint as BlueprintData, BlueprintCommand, ConfigData } from "./types";
+
+export interface BlueprintBuilder {
+  /**
+   * Adds a raw blueprint command.
+   */
+  command(command: BlueprintCommand): BlueprintBuilder;
+
+  /**
+   * Adds a configuration command. Following build commands use this config until
+   * another configuration command is added.
+   */
+  config(configs: readonly ConfigData[]): BlueprintBuilder;
+
+  /**
+   * Adds a build command for one or more x positions on the same row.
+   */
+  place(
+    x: number,
+    y: number,
+    item: number,
+    additionalPositions?: readonly number[],
+    shape?: number
+  ): BlueprintBuilder;
+
+  /**
+   * Returns the accumulated plain blueprint data.
+   */
+  toBlueprint(): BlueprintData;
+}
 
 /**
  * Decodes a Deep Space Airships blueprint string into command data.
  *
  * The input may be raw base64 or prefixed with `DSA:`.
  */
-export function decodeBlueprint(input: string): Blueprint {
+function decode(input: string): BlueprintData {
   const base64 = input.startsWith("DSA:") ? input.slice(4) : input;
   if (base64.length > MAX_WRAPPER_SIZE) {
     throw new ShipShapeError("SIZE_LIMIT", "Base64 wrapper exceeds maximum size");
@@ -60,7 +89,7 @@ export function decodeBlueprint(input: string): Blueprint {
  *
  * Pass `{ prefix: true }` to include the `DSA:` prefix.
  */
-export function encodeBlueprint(blueprint: Blueprint, options: { prefix?: boolean } = {}): string {
+function encode(blueprint: BlueprintData, options: { prefix?: boolean } = {}): string {
   const writer = new BinaryWriter();
   writer.beginArray();
   writer.writeInt(blueprint.version);
@@ -85,13 +114,77 @@ export function encodeBlueprint(blueprint: Blueprint, options: { prefix?: boolea
 /**
  * Creates a blueprint object from dimensions and commands.
  */
-export function createBlueprint(width: number, height: number, commands: readonly BlueprintCommand[]): Blueprint {
+function create(width: number, height: number, commands: readonly BlueprintCommand[]): BlueprintData {
   return {
     version: 0,
     width,
     height,
     commands: [...commands]
   };
+}
+
+/**
+ * Creates a sequential builder for raw blueprint commands.
+ */
+function builder(width: number, height: number): BlueprintBuilder {
+  const commands: BlueprintCommand[] = [];
+
+  const api: BlueprintBuilder = {
+    command(command) {
+      commands.push(cloneCommand(command));
+      return api;
+    },
+    config(configs) {
+      commands.push({ type: "configuration", configs: [...configs] });
+      return api;
+    },
+    place(x, y, item, additionalPositions = [], shape = 0) {
+      commands.push(createBuildCommand(x, y, item, additionalPositions, shape));
+      return api;
+    },
+    toBlueprint() {
+      return create(width, height, commands);
+    }
+  };
+
+  return api;
+}
+
+/**
+ * Blueprint helpers for creating, decoding, and encoding plain blueprint data.
+ */
+export const Blueprint = {
+  /**
+   * Decodes a Deep Space Airships blueprint string into command data.
+   *
+   * The input may be raw base64 or prefixed with `DSA:`.
+   */
+  decode,
+
+  /**
+   * Encodes command data into a compressed Deep Space Airships blueprint string.
+   *
+   * Pass `{ prefix: true }` to include the `DSA:` prefix.
+   */
+  encode,
+
+  /**
+   * Creates a blueprint object from dimensions and commands.
+   */
+  create,
+
+  /**
+   * Creates a sequential builder for raw blueprint commands.
+   */
+  builder
+} as const;
+
+function cloneCommand(command: BlueprintCommand): BlueprintCommand {
+  if (command.type === "configuration") {
+    return { type: "configuration", configs: [...command.configs] };
+  }
+
+  return { ...command };
 }
 
 function base64ToBytes(base64: string): Uint8Array {

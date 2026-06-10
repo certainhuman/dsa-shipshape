@@ -56,8 +56,8 @@ export function getBuildPositions(command: BuildCommand): number[] {
 /**
  * Creates a build command for one or more positions on the same row.
  *
- * The `x` position is always included. Additional positions may be supplied
- * to compact multiple placements into one command.
+ * The `x` position is always included. Additional x positions may be supplied
+ * to compact multiple placements into one command via the bitmask.
  */
 export function createBuildCommand(
   x: number,
