@@ -1,6 +1,6 @@
 # dsa-shipshape
 
-TypeScript utilities for parsing, editing, and encoding Deep Space Airships blueprint strings for [drednot.io](https://drednot.io).
+shipshape is a TypeScript library for parsing, editing, and encoding Deep Space Airships ([drednot.io](https://drednot.io)) blueprint strings.
 
 Use this package when you want to read an existing DSA blueprint, generate a new one, or make programmatic edits without handling the compressed binary blueprint format yourself.
 
@@ -16,188 +16,60 @@ Create a small blueprint and encode it back to a DSA string:
 
 ```ts
 import {
-  Item,
-  Structure,
-  Blueprint
+  Blueprint, // Encode and decode DSA blueprint strings.
+  Item, // Known DSA item IDs.
+  Shape, // Known DSA block shape IDs.
+  Structure // Editable ship model.
 } from "dsa-shipshape";
 
-const ship = new Structure(10, 10);
+const ship = new Structure(12, 8); // Create an empty 12x8 structure.
 
-ship.place(Item.CARGO_HATCH_PACKAGED, 2, 3);
-ship.place(Item.IRON_BLOCK, 4, 3);
+ship.place(Item.CARGO_HATCH_PACKAGED, 2, 3); // Place a cargo hatch at x=2, y=3.
+ship.place(Item.IRON_BLOCK, 4, 3); // Place a full iron block at x=4, y=3.
+ship.place(Item.IRON_BLOCK, 5, 3, {
+  shape: Shape.Ramp.TopLeft // Give this iron block a non-default shape.
+});
 
-const blueprint = ship.toBlueprint();
-const code = Blueprint.encode(blueprint, { prefix: true });
+const blueprint = ship.toBlueprint(); // Compact placements into blueprint commands.
+const code = Blueprint.encode(blueprint, { prefix: true }); // Encode to a base64 string with the DSA: prefix.
 
-console.log(code);
+console.log(code); // Print the encoded string.
 ```
 
 Decode, edit, and re-encode an existing blueprint:
 
 ```ts
 import {
-  Item,
-  Structure,
-  Blueprint
+  AdjacentPosition, // Loader input/output position constants.
+  Blueprint, // Encode and decode DSA blueprint strings.
+  Item, // Known DSA item IDs.
+  Priority, // Item configuration priority constants.
+  Structure, // Editable ship model.
+  loaderConfig // Helper for loader configuration objects.
 } from "dsa-shipshape";
 
-const blueprint = Blueprint.decode(inputCode);
-const ship = Structure.fromBlueprint(blueprint);
+const blueprint = Blueprint.decode(inputCode); // Parse a raw or DSA:-prefixed string.
+const ship = Structure.fromBlueprint(blueprint); // Expand commands into editable placements.
 
-ship.place(Item.LOADER_PACKAGED, 5, 5);
+const loaderId = ship.place(Item.LOADER_PACKAGED, 5, 5); // Add a loader and keep its editing ID.
+ship.config(loaderId, [
+  loaderConfig({
+    pickPosition: AdjacentPosition.LEFT_MIDDLE, // Pick up from the tile to the left.
+    placePosition: AdjacentPosition.RIGHT_MIDDLE, // Place onto the tile to the right.
+    priority: Priority.NORMAL // Use the default priority.
+  })
+]);
+ship.place(Item.IRON_BLOCK, 6, 5); // Add another placement to the structure.
 
-const outputCode = Blueprint.encode(ship.toBlueprint(), { prefix: true });
+const outputBlueprint = ship.toBlueprint(); // Rebuild to a Blueprint (command representation).
+const outputCode = Blueprint.encode(outputBlueprint, { prefix: true }); // Encode
 ```
 
-## Common Workflows
-
-### Work With Raw Blueprint Commands
-
-Use `Blueprint.builder()` when you want to add raw blueprint commands in order.
-
-```ts
-import {
-  Item,
-  Blueprint,
-  createBuildCommand
-} from "dsa-shipshape";
-
-const blueprint = Blueprint.builder(20, 12)
-  .command(createBuildCommand(2, 3, Item.CARGO_HATCH_PACKAGED))
-  .command(createBuildCommand(4, 3, Item.IRON_BLOCK, [5, 6]))
-  .toBlueprint();
-
-const code = Blueprint.encode(blueprint, { prefix: true });
-```
-
-### Edit With `Structure`
-
-`Structure` is the higher-level editing API. It expands build chains into individual placed items, lets you add/remove/configure them, then compacts the result back into blueprint commands.
-
-```ts
-import {
-  Item,
-  Structure,
-  Blueprint
-} from "dsa-shipshape";
-
-const ship = Structure.fromBlueprint(Blueprint.decode(inputCode));
-
-const id = ship.place(Item.CARGO_HATCH_PACKAGED, 12, 4);
-ship.config(id, []);
-ship.remove(id);
-
-console.log(ship.count(Item.CARGO_HATCH_PACKAGED));
-```
-
-### Configure Items
-
-Configuration helpers create the plain config objects expected by blueprint commands.
-
-```ts
-import {
-  AdjacentPosition,
-  Item,
-  FilterType,
-  Priority,
-  Structure,
-  filterConfig,
-  filterItemsConfig,
-  loaderConfig
-} from "dsa-shipshape";
-
-const ship = new Structure(20, 20);
-
-ship.place(Item.LOADER_PACKAGED, 10, 10, {
-  configs: [
-    loaderConfig({
-      pickPosition: AdjacentPosition.TOP_LEFT,
-      placePosition: AdjacentPosition.BOTTOM_RIGHT,
-      priority: Priority.HIGH
-    }),
-    filterConfig(FilterType.ALLOW_FILTER_ONLY),
-    filterItemsConfig(Item.CARGO_HATCH_PACKAGED)
-  ]
-});
-```
-
-### Use Block Shapes
-
-Use `Shape` instead of hard-coding known block shape IDs.
-
-```ts
-import {
-  Shape,
-  Item,
-  Structure
-} from "dsa-shipshape";
-
-const ship = new Structure(12, 12);
-
-ship.place(Item.IRON_BLOCK, 4, 4, {
-  shape: Shape.Ramp.TopLeft
-});
-```
-
-### Customize Build Order
-
-`Structure.toBlueprint()` uses a default stage order that matches common Deep Space Airships build expectations. You can customize it when a generated blueprint needs a different traversal or staging strategy.
-
-```ts
-import {
-  BuildOrder,
-  BuildChainMode,
-  Structure,
-  TraversalDirection
-} from "dsa-shipshape";
-
-const ship = new Structure(20, 20);
-
-const order = new BuildOrder({
-  buildChainMode: BuildChainMode.STRICT_TRAVERSAL
-}).direction(5, TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT);
-
-const blueprint = ship.toBlueprint(order);
-```
-
-## Error Handling
-
-Parsing and encoding errors throw `ShipShapeError`.
-
-```ts
-import { ShipShapeError, Blueprint } from "dsa-shipshape";
-
-try {
-  Blueprint.decode(code);
-} catch (error) {
-  if (error instanceof ShipShapeError) {
-    console.error(error.code, error.message);
-  } else {
-    throw error;
-  }
-}
-```
-
-## Limits
-
-The library validates blueprint bounds before returning decoded data or encoded strings:
-
-- Blueprint dimensions must be between `1` and `100`.
-- Encoded wrappers are limited by `MAX_WRAPPER_SIZE`.
-- Decompressed blueprint data is limited by `MAX_DECOMPRESSED_SIZE`.
-- Blueprints are limited by `MAX_BUILD_COMMANDS`.
-- `Structure.place()` accepts positions from `-0.5` through `width - 0.5` and `height - 0.5`, matching DSA coordinate behavior.
-
-## More Docs
-
-- [Concepts](docs/concepts.md)
-- [API Guide](docs/api-guide.md)
-
-## Development
+_Further docs are available in the [API Guide](docs/api-guide.md)._
 
 ```sh
-npm install
-npm run typecheck
-npm test
-npm run build
+npm install # Install dependencies
+npm run typecheck # Check for type errors
+npm test # Run tests
+npm run build # Build
 ```
