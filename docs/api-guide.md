@@ -40,13 +40,13 @@ const output = Blueprint.encode(blueprint, { prefix: true });
 import {
   Blueprint,
   FilterType,
-  ItemIds,
+  Item,
   filterConfig
 } from "dsa-shipshape";
 
 const blueprint = Blueprint.builder(20, 12)
   .config([filterConfig(FilterType.ALLOW_FILTER_ONLY)])
-  .place(4, 3, ItemIds.CARGO_HATCH_PACKAGED, [6])
+  .place(4, 3, Item.CARGO_HATCH_PACKAGED, [6])
   .toBlueprint();
 ```
 
@@ -84,11 +84,11 @@ A build command places one item type on one row. Multiple x positions are repres
 
 ```ts
 import {
-  ItemIds,
+  Item,
   createBuildCommand
 } from "dsa-shipshape";
 
-const command = createBuildCommand(4, 3, ItemIds.IRON_BLOCK, [5, 6]);
+const command = createBuildCommand(4, 3, Item.IRON_BLOCK, [5, 6]);
 ```
 
 This command places iron blocks at `(4, 3)`, `(5, 3)`, and `(6, 3)`.
@@ -108,19 +108,19 @@ Build-command bitmasks have a few important limits:
 For example, this is valid because `73 - 10 = 63`:
 
 ```ts
-createBuildCommand(10, 3, ItemIds.IRON_BLOCK, [73]);
+createBuildCommand(10, 3, Item.IRON_BLOCK, [73]);
 ```
 
 This is invalid because `74 - 10 = 64`:
 
 ```ts
-createBuildCommand(10, 3, ItemIds.IRON_BLOCK, [74]);
+createBuildCommand(10, 3, Item.IRON_BLOCK, [74]);
 ```
 
 If an additional position is smaller than the first x argument, it becomes the base x:
 
 ```ts
-createBuildCommand(10, 3, ItemIds.IRON_BLOCK, [8, 9]);
+createBuildCommand(10, 3, Item.IRON_BLOCK, [8, 9]);
 ```
 
 That command uses base x `8` and places blocks at `8`, `9`, and `10`.
@@ -143,12 +143,12 @@ A configuration command sets the set of configurations that apply to following b
 ```ts
 import {
   Blueprint,
-  ItemIds,
+  Item,
   Structure
 } from "dsa-shipshape";
 
 const structure = Structure.fromBlueprint(Blueprint.decode(code));
-const id = structure.place(ItemIds.CARGO_HATCH_PACKAGED, 5, 5);
+const id = structure.place(Item.CARGO_HATCH_PACKAGED, 5, 5);
 
 structure.config(id, []);
 
@@ -223,7 +223,7 @@ Use helper functions to create config objects with defaults:
 import {
   AdjacentPosition,
   FilterType,
-  ItemIds,
+  Item,
   Priority,
   filterConfig,
   filterItemsConfig,
@@ -237,7 +237,7 @@ const configs = [
     priority: Priority.NORMAL
   }),
   filterConfig(FilterType.ALLOW_FILTER_ONLY),
-  filterItemsConfig(ItemIds.IRON)
+  filterItemsConfig(Item.IRON)
 ];
 ```
 
@@ -267,8 +267,8 @@ const order = withStageDirection(
 Helpers:
 
 - `createBuildOrder(options?)`: creates a build order from defaults plus overrides.
-- `withItems(order, stage, ...itemIds)`: returns a copy with item IDs added to a stage.
-- `withoutItems(order, ...itemIds)`: returns a copy with item IDs removed from all stages.
+- `withItems(order, stage, ...Item)`: returns a copy with item IDs added to a stage.
+- `withoutItems(order, ...Item)`: returns a copy with item IDs removed from all stages.
 - `withStageDirection(order, stage, direction)`: returns a copy with a stage traversal direction.
 - `getItemsInStage(order, stage)`: reads stage item IDs.
 - `getBuildStageOfItem(order, itemId)`: returns the item's stage, or `-1`.
@@ -283,39 +283,39 @@ Helpers:
 
 ## Constants
 
-`ItemIds` contains known item IDs from Drednot's production item schema. Use these IDs for both build commands and configuration values such as filter slots.
+`Item` contains known item IDs from Drednot's production item schema. Use these IDs for both build commands and configuration values such as filter slots.
 
 ```ts
-import { ItemIds } from "dsa-shipshape";
+import { Item } from "dsa-shipshape";
 
-ItemIds.IRON_BLOCK;
-ItemIds.CARGO_HATCH_PACKAGED;
-ItemIds.IRON;
+Item.IRON_BLOCK;
+Item.CARGO_HATCH_PACKAGED;
+Item.IRON;
 ```
 
-`ITEM_IDS` is the array of all known item IDs.
+`ITEMS` is the array of all known item IDs.
 
 `NavDestinationIds` contains known overworld destination IDs for nav unit config. These are internal game constants and may change if the game changes its destination IDs.
 
-## BlockShape
+## Shape
 
-`BlockShape` contains known block shape IDs grouped by readable names.
+`Shape` contains known block shape IDs grouped by readable names.
 
 ```ts
 import {
-  BlockShape,
-  ItemIds,
+  Shape,
+  Item,
   Structure
 } from "dsa-shipshape";
 
 const structure = new Structure(20, 12);
 
-structure.place(ItemIds.IRON_BLOCK, 8, 5, {
-  shape: BlockShape.Half.Top
+structure.place(Item.IRON_BLOCK, 8, 5, {
+  shape: Shape.Half.Top
 });
 ```
 
-Use `KNOWN_BLOCK_SHAPE_IDS` and `isKnownBlockShapeId(shape)` when validating user input.
+Use `KNOWN_SHAPE_IDS` and `isKnownShapeId(shape)` when validating user input.
 
 ## ShipShapeError
 

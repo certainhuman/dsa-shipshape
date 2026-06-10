@@ -10,7 +10,7 @@ export const MAX_BUILD_COMMANDS = 1000;
  *
  * Source: https://pub.drednot.io/prod/econ/item_schema.json
  */
-export const ItemIds = {
+export const Item = {
   IRON: 1,
   EXPLOSIVES: 2,
   HYPER_RUBBER: 4,
@@ -154,8 +154,8 @@ export const ItemIds = {
   BETA_SLUG_AMMO: 405
 } as const;
 
-export const ITEM_IDS = Object.values(ItemIds);
-export type ItemId = (typeof ITEM_IDS)[number];
+export const ITEMS = Object.values(Item);
+export type ItemId = (typeof ITEMS)[number];
 
 /**
  * Known game overworld destination IDs for nav unit configs.

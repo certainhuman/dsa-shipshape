@@ -1,4 +1,4 @@
-import { ItemIds } from "./constants";
+import { Item } from "./constants";
 import {
   BuildChainMode,
   TraversalAxis,
@@ -28,46 +28,46 @@ export interface BuildOrderOptions {
 
 export const DEFAULT_STAGE_ITEMS: StageItems = {
   1: [
-    ItemIds.IRON_BLOCK,
-    ItemIds.HYPER_ICE_BLOCK,
-    ItemIds.HYPER_RUBBER_BLOCK,
-    ItemIds.WALKWAY,
-    ItemIds.ITEM_NET,
-    ItemIds.LOGISTICS_RAIL,
-    ItemIds.LADDER
+    Item.IRON_BLOCK,
+    Item.HYPER_ICE_BLOCK,
+    Item.HYPER_RUBBER_BLOCK,
+    Item.WALKWAY,
+    Item.ITEM_NET,
+    Item.LOGISTICS_RAIL,
+    Item.LADDER
   ],
   2: [
-    ItemIds.TURRET_CONTROLLER_PACKAGED,
-    ItemIds.THRUSTER_PACKAGED,
-    ItemIds.THRUSTER_STARTER_PACKAGED,
-    ItemIds.CANNON_PACKAGED,
-    ItemIds.STARTER_CANNON_PACKAGED,
-    ItemIds.BURST_CANNON_PACKAGED,
-    ItemIds.MACHINE_CANNON_PACKAGED,
-    ItemIds.OBTUSE_CANNON_PACKAGED,
-    ItemIds.ACUTE_CANNON_PACKAGED,
-    ItemIds.FABRICATOR_ENGINEERING_PACKAGED,
-    ItemIds.FABRICATOR_EQUIPMENT_PACKAGED,
-    ItemIds.FABRICATOR_MUNITIONS_PACKAGED,
-    ItemIds.FABRICATOR_STARTER_PACKAGED,
-    ItemIds.FABRICATOR_LEGACY_PACKAGED,
-    ItemIds.HELM_PACKAGED,
-    ItemIds.HELM_STARTER_PACKAGED,
-    ItemIds.COMMS_STATION_PACKAGED,
-    ItemIds.RECYCLER_PACKAGED,
-    ItemIds.SHIELD_PROJECTOR,
-    ItemIds.FLUID_TANK,
-    ItemIds.MUNITIONS_SUPPLY_UNIT_PACKAGED
+    Item.TURRET_CONTROLLER_PACKAGED,
+    Item.THRUSTER_PACKAGED,
+    Item.THRUSTER_STARTER_PACKAGED,
+    Item.CANNON_PACKAGED,
+    Item.STARTER_CANNON_PACKAGED,
+    Item.BURST_CANNON_PACKAGED,
+    Item.MACHINE_CANNON_PACKAGED,
+    Item.OBTUSE_CANNON_PACKAGED,
+    Item.ACUTE_CANNON_PACKAGED,
+    Item.FABRICATOR_ENGINEERING_PACKAGED,
+    Item.FABRICATOR_EQUIPMENT_PACKAGED,
+    Item.FABRICATOR_MUNITIONS_PACKAGED,
+    Item.FABRICATOR_STARTER_PACKAGED,
+    Item.FABRICATOR_LEGACY_PACKAGED,
+    Item.HELM_PACKAGED,
+    Item.HELM_STARTER_PACKAGED,
+    Item.COMMS_STATION_PACKAGED,
+    Item.RECYCLER_PACKAGED,
+    Item.SHIELD_PROJECTOR,
+    Item.FLUID_TANK,
+    Item.MUNITIONS_SUPPLY_UNIT_PACKAGED
   ],
   3: [
-    ItemIds.LOADER_PACKAGED,
-    ItemIds.PUSHER_PACKAGED,
-    ItemIds.SHIELD_GENERATOR,
-    ItemIds.CARGO_EJECTOR_PACKAGED,
-    ItemIds.NAVIGATION_UNIT_STARTER_PACKAGED
+    Item.LOADER_PACKAGED,
+    Item.PUSHER_PACKAGED,
+    Item.SHIELD_GENERATOR,
+    Item.CARGO_EJECTOR_PACKAGED,
+    Item.NAVIGATION_UNIT_STARTER_PACKAGED
   ],
-  4: [ItemIds.EXPANDO_BOX_PACKAGED],
-  5: [ItemIds.CARGO_HATCH_PACKAGED, ItemIds.CARGO_HATCH_STARTER_PACKAGED]
+  4: [Item.EXPANDO_BOX_PACKAGED],
+  5: [Item.CARGO_HATCH_PACKAGED, Item.CARGO_HATCH_STARTER_PACKAGED]
 };
 
 export const DEFAULT_STAGE_DIRECTIONS: StageDirections = {
@@ -99,8 +99,8 @@ export const DEFAULT_BUILD_ORDER = createBuildOrder();
 /**
  * Returns a copy of a build order with the given item IDs removed from all stages.
  */
-export function withoutItems(order: BuildOrder, ...itemIds: number[]): BuildOrder {
-  const remove = new Set(itemIds);
+export function withoutItems(order: BuildOrder, ...Item: number[]): BuildOrder {
+  const remove = new Set(Item);
   const stages: StageItems = Object.fromEntries(
     Object.entries(order.stages).map(([stage, items]) => [
       stage,
@@ -113,9 +113,9 @@ export function withoutItems(order: BuildOrder, ...itemIds: number[]): BuildOrde
 /**
  * Returns a copy of a build order with item IDs added to a stage.
  */
-export function withItems(order: BuildOrder, stage: number, ...itemIds: number[]): BuildOrder {
+export function withItems(order: BuildOrder, stage: number, ...Item: number[]): BuildOrder {
   const stages = cloneStages(order.stages);
-  stages[stage] = [...(stages[stage] ?? []), ...itemIds];
+  stages[stage] = [...(stages[stage] ?? []), ...Item];
 
   const stageDirections = { ...order.stageDirections };
   if (!stageDirections[stage]) {

@@ -79,7 +79,7 @@ The helpers in `configs.ts` create supported configuration objects:
 
 ```ts
 const structure = Structure.fromBlueprint(blueprint);
-const id = structure.place(ItemIds.CARGO_HATCH_PACKAGED, 2, 3);
+const id = structure.place(Item.CARGO_HATCH_PACKAGED, 2, 3);
 structure.config(id, []);
 const nextBlueprint = structure.toBlueprint();
 ```
@@ -88,19 +88,19 @@ Placed items have stable IDs inside a `Structure` instance. These IDs are editin
 
 ## Items
 
-Use `ItemIds` for game item IDs for configs such as filters. These values are generated from Drednot's live item schema and may need updates if the game schema changes.
+Use `Item` for game item IDs for configs such as filters. These values are generated from Drednot's live item schema and may need updates if the game schema changes.
 
 The package also exports:
 
-- `ITEM_IDS`: all known item IDs from `ItemIds`.
+- `ITEMS`: all known item IDs from `Item`.
 
-Unknown numeric item IDs can still be used where the API accepts `number`, but the default build order only includes known buildable item IDs from `ItemIds`.
+Unknown numeric item IDs can still be used where the API accepts `number`, but the default build order only includes known buildable item IDs from `Item`.
 
 ## Shapes
 
-`BlockShape` contains known block shape IDs grouped by readable names, such as `BlockShape.Full`, `BlockShape.Ramp.TopLeft`, and `BlockShape.Half.Bottom`.
+`Shape` contains known block shape IDs grouped by readable names, such as `Shape.Full`, `Shape.Ramp.TopLeft`, and `Shape.Half.Bottom`.
 
-Use `isKnownBlockShapeId(shape)` to check whether a number is in the known shape list.
+Use `isKnownShapeId(shape)` to check whether a number is in the known shape list.
 
 ## Build Order
 

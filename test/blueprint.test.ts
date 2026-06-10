@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  ItemIds,
+  Item,
   FilterType,
   Blueprint,
   filterConfig
@@ -17,7 +17,7 @@ describe("blueprint encoding", () => {
         type: "build",
         x: 2,
         y: 3,
-        item: ItemIds.CARGO_HATCH_PACKAGED,
+        item: Item.CARGO_HATCH_PACKAGED,
         bits: 0b101n,
         shape: 0
       }
@@ -29,7 +29,7 @@ describe("blueprint encoding", () => {
   it("builds blueprint commands sequentially", () => {
     const blueprint = Blueprint.builder(10, 10)
       .config([filterConfig(FilterType.ALLOW_FILTER_ONLY)])
-      .place(2, 3, ItemIds.CARGO_HATCH_PACKAGED, [4], 0)
+      .place(2, 3, Item.CARGO_HATCH_PACKAGED, [4], 0)
       .toBlueprint();
 
     expect(blueprint).toEqual({
@@ -45,7 +45,7 @@ describe("blueprint encoding", () => {
           type: "build",
           x: 2,
           y: 3,
-          item: ItemIds.CARGO_HATCH_PACKAGED,
+          item: Item.CARGO_HATCH_PACKAGED,
           bits: 0b101n,
           shape: 0
         }

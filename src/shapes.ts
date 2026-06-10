@@ -4,7 +4,7 @@
  * Directional names identify the solid side or corner of the shape. Diagrams
  * use `#` for solid material and `.` for empty space inside the tile border.
  */
-export const BlockShape = {
+export const Shape = {
   /**
    * Full solid tile.
    *
@@ -551,58 +551,58 @@ export const BlockShape = {
   }
 } as const;
 
-export const KNOWN_BLOCK_SHAPE_IDS = [
-  BlockShape.Full,
-  BlockShape.Ramp.TopLeft,
-  BlockShape.Ramp.TopRight,
-  BlockShape.Ramp.BottomLeft,
-  BlockShape.Ramp.BottomRight,
-  BlockShape.Half.Bottom,
-  BlockShape.Half.Top,
-  BlockShape.Half.Right,
-  BlockShape.Half.Left,
-  BlockShape.HalfRamp.Wedge.Horizontal.TopLeft,
-  BlockShape.HalfRamp.Wedge.Horizontal.TopRight,
-  BlockShape.HalfRamp.Wedge.Horizontal.BottomLeft,
-  BlockShape.HalfRamp.Wedge.Horizontal.BottomRight,
-  BlockShape.HalfRamp.Wedge.Vertical.TopLeft,
-  BlockShape.HalfRamp.Wedge.Vertical.TopRight,
-  BlockShape.HalfRamp.Wedge.Vertical.BottomLeft,
-  BlockShape.HalfRamp.Wedge.Vertical.BottomRight,
-  BlockShape.HalfRamp.ThickWedge.Horizontal.TopLeft,
-  BlockShape.HalfRamp.ThickWedge.Horizontal.TopRight,
-  BlockShape.HalfRamp.ThickWedge.Horizontal.BottomLeft,
-  BlockShape.HalfRamp.ThickWedge.Horizontal.BottomRight,
-  BlockShape.HalfRamp.ThickWedge.Vertical.TopLeft,
-  BlockShape.HalfRamp.ThickWedge.Vertical.TopRight,
-  BlockShape.HalfRamp.ThickWedge.Vertical.BottomLeft,
-  BlockShape.HalfRamp.ThickWedge.Vertical.BottomRight,
-  BlockShape.HalfRamp.OffsetWedge.Horizontal.TopLeft,
-  BlockShape.HalfRamp.OffsetWedge.Horizontal.TopRight,
-  BlockShape.HalfRamp.OffsetWedge.Horizontal.BottomLeft,
-  BlockShape.HalfRamp.OffsetWedge.Horizontal.BottomRight,
-  BlockShape.HalfRamp.OffsetWedge.Vertical.TopLeft,
-  BlockShape.HalfRamp.OffsetWedge.Vertical.TopRight,
-  BlockShape.HalfRamp.OffsetWedge.Vertical.BottomLeft,
-  BlockShape.HalfRamp.OffsetWedge.Vertical.BottomRight,
-  BlockShape.Quarter.TopLeft,
-  BlockShape.Quarter.TopRight,
-  BlockShape.Quarter.BottomLeft,
-  BlockShape.Quarter.BottomRight,
-  BlockShape.CornerRamp.TopLeft,
-  BlockShape.CornerRamp.TopRight,
-  BlockShape.CornerRamp.BottomLeft,
-  BlockShape.CornerRamp.BottomRight,
-  BlockShape.Chamfer.TopLeft,
-  BlockShape.Chamfer.TopRight,
-  BlockShape.Chamfer.BottomLeft,
-  BlockShape.Chamfer.BottomRight
+export const KNOWN_SHAPE_IDS = [
+  Shape.Full,
+  Shape.Ramp.TopLeft,
+  Shape.Ramp.TopRight,
+  Shape.Ramp.BottomLeft,
+  Shape.Ramp.BottomRight,
+  Shape.Half.Bottom,
+  Shape.Half.Top,
+  Shape.Half.Right,
+  Shape.Half.Left,
+  Shape.HalfRamp.Wedge.Horizontal.TopLeft,
+  Shape.HalfRamp.Wedge.Horizontal.TopRight,
+  Shape.HalfRamp.Wedge.Horizontal.BottomLeft,
+  Shape.HalfRamp.Wedge.Horizontal.BottomRight,
+  Shape.HalfRamp.Wedge.Vertical.TopLeft,
+  Shape.HalfRamp.Wedge.Vertical.TopRight,
+  Shape.HalfRamp.Wedge.Vertical.BottomLeft,
+  Shape.HalfRamp.Wedge.Vertical.BottomRight,
+  Shape.HalfRamp.ThickWedge.Horizontal.TopLeft,
+  Shape.HalfRamp.ThickWedge.Horizontal.TopRight,
+  Shape.HalfRamp.ThickWedge.Horizontal.BottomLeft,
+  Shape.HalfRamp.ThickWedge.Horizontal.BottomRight,
+  Shape.HalfRamp.ThickWedge.Vertical.TopLeft,
+  Shape.HalfRamp.ThickWedge.Vertical.TopRight,
+  Shape.HalfRamp.ThickWedge.Vertical.BottomLeft,
+  Shape.HalfRamp.ThickWedge.Vertical.BottomRight,
+  Shape.HalfRamp.OffsetWedge.Horizontal.TopLeft,
+  Shape.HalfRamp.OffsetWedge.Horizontal.TopRight,
+  Shape.HalfRamp.OffsetWedge.Horizontal.BottomLeft,
+  Shape.HalfRamp.OffsetWedge.Horizontal.BottomRight,
+  Shape.HalfRamp.OffsetWedge.Vertical.TopLeft,
+  Shape.HalfRamp.OffsetWedge.Vertical.TopRight,
+  Shape.HalfRamp.OffsetWedge.Vertical.BottomLeft,
+  Shape.HalfRamp.OffsetWedge.Vertical.BottomRight,
+  Shape.Quarter.TopLeft,
+  Shape.Quarter.TopRight,
+  Shape.Quarter.BottomLeft,
+  Shape.Quarter.BottomRight,
+  Shape.CornerRamp.TopLeft,
+  Shape.CornerRamp.TopRight,
+  Shape.CornerRamp.BottomLeft,
+  Shape.CornerRamp.BottomRight,
+  Shape.Chamfer.TopLeft,
+  Shape.Chamfer.TopRight,
+  Shape.Chamfer.BottomLeft,
+  Shape.Chamfer.BottomRight
 ] as const;
 
-export type KnownBlockShapeId = (typeof KNOWN_BLOCK_SHAPE_IDS)[number];
+export type KnownShapeId = (typeof KNOWN_SHAPE_IDS)[number];
 
-const knownBlockShapeIdSet = new Set<number>(KNOWN_BLOCK_SHAPE_IDS);
+const knownShapeIdSet = new Set<number>(KNOWN_SHAPE_IDS);
 
-export function isKnownBlockShapeId(shape: number): shape is KnownBlockShapeId {
-  return knownBlockShapeIdSet.has(shape);
+export function isKnownShapeId(shape: number): shape is KnownShapeId {
+  return knownShapeIdSet.has(shape);
 }

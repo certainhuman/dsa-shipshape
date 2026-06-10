@@ -4,8 +4,8 @@ import {
   FilterType,
   NavDestinationIds,
   Priority,
-  ItemIds,
-  ITEM_IDS,
+  Item,
+  ITEMS,
   createBuildCommand,
   filterConfig,
   filterItemsConfig,
@@ -39,17 +39,17 @@ describe("public helpers", () => {
       items: [123, 0, 0]
     });
 
-    expect(filterItemsConfig(ItemIds.IRON)).toEqual({
+    expect(filterItemsConfig(Item.IRON)).toEqual({
       type: "filter_items",
-      items: [ItemIds.IRON, 0, 0]
+      items: [Item.IRON, 0, 0]
     });
   });
 
   it("exposes all known item ids from the item schema", () => {
-    expect(ItemIds.IRON).toBe(1);
-    expect(ItemIds.CARGO_HATCH_PACKAGED).toBe(221);
-    expect(ItemIds.BETA_SLUG_AMMO).toBe(405);
-    expect(ITEM_IDS).toHaveLength(141);
+    expect(Item.IRON).toBe(1);
+    expect(Item.CARGO_HATCH_PACKAGED).toBe(221);
+    expect(Item.BETA_SLUG_AMMO).toBe(405);
+    expect(ITEMS).toHaveLength(141);
   });
 
   it("exposes known nav destination ids", () => {
@@ -62,11 +62,11 @@ describe("public helpers", () => {
   });
 
   it("creates build commands from a starting x and additional x positions", () => {
-    expect(createBuildCommand(4, 3, ItemIds.IRON_BLOCK, [5, 6])).toEqual({
+    expect(createBuildCommand(4, 3, Item.IRON_BLOCK, [5, 6])).toEqual({
       type: "build",
       x: 4,
       y: 3,
-      item: ItemIds.IRON_BLOCK,
+      item: Item.IRON_BLOCK,
       bits: 0b111n,
       shape: 0
     });

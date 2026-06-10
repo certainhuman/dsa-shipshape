@@ -35,8 +35,8 @@ export {
   type PusherConfigOptions
 } from "./configs";
 export {
-  ITEM_IDS,
-  ItemIds,
+  ITEMS,
+  Item,
   MAX_BUILD_COMMANDS,
   MAX_DECOMPRESSED_SIZE,
   MAX_WRAPPER_SIZE,
@@ -55,10 +55,10 @@ export {
 } from "./enums";
 export * from "./errors";
 export {
-  BlockShape,
-  KNOWN_BLOCK_SHAPE_IDS,
-  isKnownBlockShapeId,
-  type KnownBlockShapeId
+  Shape,
+  KNOWN_SHAPE_IDS,
+  isKnownShapeId,
+  type KnownShapeId
 } from "./shapes";
 export * from "./structure";
 export type * from "./types";
