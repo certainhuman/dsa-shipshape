@@ -95,7 +95,7 @@ This command places iron blocks at `(4, 3)`, `(5, 3)`, and `(6, 3)`.
 
 Use `getBuildPositions(command)` to expand a command's bit mask back into x positions.
 
-Build-command bitmasks have a few important limits:
+Build-command bitmasks have limits due to the way they are encoded in the blueprint schema:
 
 - All positions in one command are on the same `y` row.
 - All positions in one command use the same `item` and `shape`.
