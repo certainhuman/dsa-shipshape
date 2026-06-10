@@ -145,22 +145,17 @@ ship.place(Item.IRON_BLOCK, 4, 4, {
 
 ```ts
 import {
+  BuildOrder,
   BuildChainMode,
   Structure,
-  TraversalDirection,
-  createBuildOrder,
-  withStageDirection
+  TraversalDirection
 } from "dsa-shipshape";
 
 const ship = new Structure(20, 20);
 
-const order = withStageDirection(
-  createBuildOrder({
-    buildChainMode: BuildChainMode.STRICT_TRAVERSAL
-  }),
-  5,
-  TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT
-);
+const order = new BuildOrder({
+  buildChainMode: BuildChainMode.STRICT_TRAVERSAL
+}).direction(5, TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT);
 
 const blueprint = ship.toBlueprint(order);
 ```

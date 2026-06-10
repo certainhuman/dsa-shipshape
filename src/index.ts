@@ -2,18 +2,10 @@ export {
   Blueprint
 } from "./blueprint";
 export {
+  BuildOrder,
   DEFAULT_BUILD_ORDER,
   DEFAULT_STAGE_DIRECTIONS,
   DEFAULT_STAGE_ITEMS,
-  createBuildOrder,
-  getBuildStageOfItem,
-  getItemsInStage,
-  getStageDirection,
-  numStages,
-  withItems,
-  withStageDirection,
-  withoutItems,
-  type BuildOrder,
   type BuildOrderOptions,
   type StageDirections,
   type StageItems

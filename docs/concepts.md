@@ -112,7 +112,7 @@ Use `isKnownShapeId(shape)` to check whether a number is in the known shape list
 4. Expando box.
 5. Cargo hatch.
 
-Use `createBuildOrder()` and helpers such as `withItems()`, `withoutItems()`, and `withStageDirection()` to customize staging.
+Use `new BuildOrder()` and instance methods such as `.with()`, `.without()`, and `.direction()` to customize staging.
 
 `BuildChainMode` controls how placed items are compacted into build commands:
 

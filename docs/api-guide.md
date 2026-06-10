@@ -245,35 +245,35 @@ const configs = [
 
 `Structure.toBlueprint()` uses a `BuildOrder` to decide which items are emitted in which stage, how each stage is traversed, and how placements are compacted into build chains.
 
-Use `createBuildOrder()` to create a customized order:
+Use `new BuildOrder()` to create a customized order:
 
 ```ts
 import {
+  BuildOrder,
   BuildChainMode,
-  TraversalDirection,
-  createBuildOrder,
-  withStageDirection
+  Item,
+  TraversalDirection
 } from "dsa-shipshape";
 
-const order = withStageDirection(
-  createBuildOrder({
-    buildChainMode: BuildChainMode.STRICT_TRAVERSAL
-  }),
-  5,
-  TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT
-);
+const order = new BuildOrder({
+  buildChainMode: BuildChainMode.STRICT_TRAVERSAL
+})
+  .without(Item.EXPANDO_BOX_PACKAGED)
+  .with(5, Item.EXPANDO_BOX_PACKAGED)
+  .direction(5, TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT);
 ```
 
-Helpers:
+Constructor and methods:
 
-- `createBuildOrder(options?)`: creates a build order from defaults plus overrides.
-- `withItems(order, stage, ...Item)`: returns a copy with item IDs added to a stage.
-- `withoutItems(order, ...Item)`: returns a copy with item IDs removed from all stages.
-- `withStageDirection(order, stage, direction)`: returns a copy with a stage traversal direction.
-- `getItemsInStage(order, stage)`: reads stage item IDs.
-- `getBuildStageOfItem(order, itemId)`: returns the item's stage, or `-1`.
-- `getStageDirection(order, stage)`: reads a stage traversal direction.
-- `numStages(order)`: returns the highest stage number.
+- `new BuildOrder(options?)`: creates a build order from defaults plus overrides.
+- `BuildOrder.create(options?)`: static equivalent to the constructor.
+- `order.with(stage, ...itemIds)`: returns a copy with item IDs added to a stage.
+- `order.without(...itemIds)`: returns a copy with item IDs removed from all stages.
+- `order.direction(stage, direction)`: returns a copy with a stage traversal direction.
+- `order.items(stage)`: reads stage item IDs.
+- `order.stageOf(itemId)`: returns the item's stage, or `-1`.
+- `order.directionOf(stage)`: reads a stage traversal direction.
+- `order.numStages()`: returns the highest stage number.
 
 `BuildChainMode` values:
 

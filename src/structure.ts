@@ -1,9 +1,5 @@
 import {
   DEFAULT_BUILD_ORDER,
-  getBuildStageOfItem,
-  getItemsInStage,
-  getStageDirection,
-  numStages,
   type BuildOrder
 } from "./build-order";
 import { configKey, configsEqual } from "./configs";
@@ -166,11 +162,11 @@ export class Structure {
   toBlueprint(buildOrder: BuildOrder = DEFAULT_BUILD_ORDER): Blueprint {
     const commands: BlueprintCommand[] = [];
 
-    for (let stage = 1; stage <= numStages(buildOrder); stage++) {
+    for (let stage = 1; stage <= buildOrder.numStages(); stage++) {
       const stageBuilds = this.getBuildsForStage(stage, buildOrder);
       if (stageBuilds.length === 0) continue;
 
-      const sortedStageBuilds = sortByTraversal(stageBuilds, getStageDirection(buildOrder, stage));
+      const sortedStageBuilds = sortByTraversal(stageBuilds, buildOrder.directionOf(stage));
       if (
         buildOrder.buildChainMode === BuildChainMode.ALLOW_DEFERRAL &&
         buildOrder.preserveSourceOrder
@@ -208,15 +204,15 @@ export class Structure {
       case BuildChainMode.ALLOW_DEFERRAL: {
         const first = builds[0];
         if (!first) return;
-        const stage = getBuildStageOfItem(buildOrder, first.item);
-        const sortedBuilds = sortByTraversal(builds, getStageDirection(buildOrder, stage));
+        const stage = buildOrder.stageOf(first.item);
+        const sortedBuilds = sortByTraversal(builds, buildOrder.directionOf(stage));
         for (const chain of createDeferralChains(sortedBuilds)) addBuildCommand(commands, chain);
         break;
       }
       case BuildChainMode.GROUP_BY_ITEM:
         for (const itemGroup of getItemGroups(builds)) {
-          const stage = getBuildStageOfItem(buildOrder, itemGroup.group.item);
-          const sortedBuilds = sortByTraversal(itemGroup.builds, getStageDirection(buildOrder, stage));
+          const stage = buildOrder.stageOf(itemGroup.group.item);
+          const sortedBuilds = sortByTraversal(itemGroup.builds, buildOrder.directionOf(stage));
           for (const chain of createStrictChains(sortedBuilds)) addBuildCommand(commands, chain);
         }
         break;
@@ -224,7 +220,7 @@ export class Structure {
   }
 
   private getBuildsForStage(stage: number, buildOrder: BuildOrder): StructureBuild[] {
-    const stageItems = new Set(getItemsInStage(buildOrder, stage));
+    const stageItems = new Set(buildOrder.items(stage));
     if (stageItems.size === 0) return [];
     return this.builds.filter((build) => stageItems.has(build.item));
   }
