@@ -62,5 +62,11 @@ export {
   type NavDestinationId,
   type NavDestinationName
 } from "./nav";
+export {
+  BlockShape,
+  KNOWN_BLOCK_SHAPE_IDS,
+  isKnownBlockShapeId,
+  type KnownBlockShapeId
+} from "./shapes";
 export * from "./structure";
 export type * from "./types";
