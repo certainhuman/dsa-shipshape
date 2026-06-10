@@ -9,7 +9,7 @@ import {
 import { configKey, configsEqual } from "./configs";
 import { getBuildPositions } from "./commands";
 import { BuildChainMode, TraversalDirection } from "./enums";
-import { DsaBpError } from "./errors";
+import { ShipShapeError } from "./errors";
 import type { Blueprint, BlueprintCommand, BuildCommand, ConfigData } from "./types";
 
 export interface StructureBuild {
@@ -94,7 +94,7 @@ export class Structure {
    */
   placeItem(item: number, x: number, y: number, options: PlaceItemOptions = {}): number {
     if (x < -0.5 || x > this.width - 0.5 || y < -0.5 || y > this.height - 0.5) {
-      throw new DsaBpError("INVALID_BLUEPRINT", "Item placement out of bounds");
+      throw new ShipShapeError("INVALID_BLUEPRINT", "Item placement out of bounds");
     }
 
     const build: StructureBuild = {
@@ -231,7 +231,7 @@ export class Structure {
 
   private addBuild(build: StructureBuild): void {
     if (this.buildsById.has(build.id)) {
-      throw new DsaBpError("INVALID_BLUEPRINT", `Duplicate build id: ${build.id}`);
+      throw new ShipShapeError("INVALID_BLUEPRINT", `Duplicate build id: ${build.id}`);
     }
 
     this.builds.push(build);
@@ -242,7 +242,7 @@ export class Structure {
     this.buildsById.clear();
     for (const build of this.builds) {
       if (this.buildsById.has(build.id)) {
-        throw new DsaBpError("INVALID_BLUEPRINT", `Duplicate build id: ${build.id}`);
+        throw new ShipShapeError("INVALID_BLUEPRINT", `Duplicate build id: ${build.id}`);
       }
       this.buildsById.set(build.id, build);
     }
@@ -376,7 +376,7 @@ function canAppend(currentChain: StructureBuild[], build: StructureBuild): boole
 function createGroupedChain(builds: StructureBuild[]): GroupedBuildChain {
   const first = builds[0];
   if (!first) {
-    throw new DsaBpError("INVALID_BLUEPRINT", "Cannot create an empty build chain");
+    throw new ShipShapeError("INVALID_BLUEPRINT", "Cannot create an empty build chain");
   }
 
   return {
@@ -388,7 +388,7 @@ function createGroupedChain(builds: StructureBuild[]): GroupedBuildChain {
 function createChain(builds: StructureBuild[]): BuildChain {
   const first = builds[0];
   if (!first) {
-    throw new DsaBpError("INVALID_BLUEPRINT", "Cannot create an empty build chain");
+    throw new ShipShapeError("INVALID_BLUEPRINT", "Cannot create an empty build chain");
   }
 
   const baseX = Math.min(...builds.map((build) => build.x));

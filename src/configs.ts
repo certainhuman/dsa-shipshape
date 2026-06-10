@@ -6,7 +6,7 @@ import {
   Priority,
   PusherAction
 } from "./enums";
-import { DsaBpError } from "./errors";
+import { ShipShapeError } from "./errors";
 import type {
   AngleConfig,
   ConfigData,
@@ -77,7 +77,7 @@ export function pusherConfig(options: PusherConfigOptions = {}): PusherConfig {
 }
 
 /**
- * Creates a nav unit configuration object with in-game defaults.
+ * Creates a nav unit configuration object, unspecified  with in-game defaults.
  */
 export function navUnitConfig(options: NavUnitConfigOptions = {}): NavUnitConfig {
   return {
@@ -188,7 +188,7 @@ function parseConfig(configName: string, reader: BinaryReader): ConfigData {
     case "filter_items":
       return parseFilterItemsConfig(reader);
     default:
-      throw new DsaBpError("INVALID_CONFIG", `Unexpected config: ${configName}`);
+      throw new ShipShapeError("INVALID_CONFIG", `Unexpected config: ${configName}`);
   }
 }
 

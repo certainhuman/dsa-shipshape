@@ -2,7 +2,7 @@ import { deflateSync, inflateSync } from "fflate";
 import { BinaryReader, BinaryWriter } from "./binary";
 import { MAX_BUILD_COMMANDS, MAX_DECOMPRESSED_SIZE, MAX_WRAPPER_SIZE } from "./constants";
 import { parseCommand, serializeCommand } from "./commands";
-import { DsaBpError } from "./errors";
+import { ShipShapeError } from "./errors";
 import type { Blueprint, BlueprintCommand } from "./types";
 
 /**
@@ -13,13 +13,13 @@ import type { Blueprint, BlueprintCommand } from "./types";
 export function decodeBlueprint(input: string): Blueprint {
   const base64 = input.startsWith("DSA:") ? input.slice(4) : input;
   if (base64.length > MAX_WRAPPER_SIZE) {
-    throw new DsaBpError("SIZE_LIMIT", "Base64 wrapper exceeds maximum size");
+    throw new ShipShapeError("SIZE_LIMIT", "Base64 wrapper exceeds maximum size");
   }
 
   const compressed = base64ToBytes(base64);
   const decompressed = inflateSync(compressed);
   if (decompressed.length > MAX_DECOMPRESSED_SIZE) {
-    throw new DsaBpError("SIZE_LIMIT", "Decompressed data exceeds maximum size");
+    throw new ShipShapeError("SIZE_LIMIT", "Decompressed data exceeds maximum size");
   }
 
   const reader = new BinaryReader(decompressed);
@@ -27,13 +27,13 @@ export function decodeBlueprint(input: string): Blueprint {
 
   const version = reader.nextNumberAsNumber();
   if (version !== -1 && version !== 0) {
-    throw new DsaBpError("INVALID_BLUEPRINT", "Invalid blueprint version");
+    throw new ShipShapeError("INVALID_BLUEPRINT", "Invalid blueprint version");
   }
 
   const width = reader.nextNumberAsNumber();
   const height = reader.nextNumberAsNumber();
   if (width < 1 || width > 100 || height < 1 || height > 100) {
-    throw new DsaBpError("INVALID_BLUEPRINT", "Invalid blueprint dimensions");
+    throw new ShipShapeError("INVALID_BLUEPRINT", "Invalid blueprint dimensions");
   }
 
   const commands: BlueprintCommand[] = [];
@@ -46,10 +46,10 @@ export function decodeBlueprint(input: string): Blueprint {
 
   const buildCount = commands.filter((command) => command.type === "build").length;
   if (buildCount === 0) {
-    throw new DsaBpError("INVALID_BLUEPRINT", "No build commands found");
+    throw new ShipShapeError("INVALID_BLUEPRINT", "No build commands found");
   }
   if (buildCount > MAX_BUILD_COMMANDS) {
-    throw new DsaBpError("SIZE_LIMIT", "Too many build commands");
+    throw new ShipShapeError("SIZE_LIMIT", "Too many build commands");
   }
 
   return { version, width, height, commands };
@@ -76,7 +76,7 @@ export function encodeBlueprint(blueprint: Blueprint, options: { prefix?: boolea
   const compressed = deflateSync(writer.toBytes(), { level: 9 });
   const base64 = bytesToBase64(compressed);
   if (base64.length > MAX_WRAPPER_SIZE) {
-    throw new DsaBpError("SIZE_LIMIT", "Resulting Base64 string exceeds maximum size");
+    throw new ShipShapeError("SIZE_LIMIT", "Resulting Base64 string exceeds maximum size");
   }
 
   return options.prefix ? `DSA:${base64}` : base64;
@@ -110,7 +110,7 @@ function base64ToBytes(base64: string): Uint8Array {
     return bytes;
   }
 
-  throw new DsaBpError("INVALID_BLUEPRINT", "No base64 decoder is available");
+  throw new ShipShapeError("INVALID_BLUEPRINT", "No base64 decoder is available");
 }
 
 function bytesToBase64(bytes: Uint8Array): string {
@@ -128,5 +128,5 @@ function bytesToBase64(bytes: Uint8Array): string {
     return globals.btoa(binary);
   }
 
-  throw new DsaBpError("INVALID_BLUEPRINT", "No base64 encoder is available");
+  throw new ShipShapeError("INVALID_BLUEPRINT", "No base64 encoder is available");
 }

@@ -1,4 +1,4 @@
-import { DsaBpError } from "./errors";
+import { ShipShapeError } from "./errors";
 import { SerializerTag } from "./enums";
 
 export type TokenType =
@@ -195,7 +195,7 @@ export class BinaryReader {
       case SerializerTag.BYTES_L4:
         return "bytes";
       default:
-        throw new DsaBpError("UNKNOWN_TOKEN", `Unknown token type: 0x${b.toString(16).padStart(2, "0")}`);
+        throw new ShipShapeError("UNKNOWN_TOKEN", `Unknown token type: 0x${b.toString(16).padStart(2, "0")}`);
     }
   }
 
@@ -236,7 +236,7 @@ export class BinaryReader {
       case SerializerTag.F64:
         return this.readFloat64();
       default:
-        throw new DsaBpError("UNEXPECTED_TOKEN", `Unexpected number token: 0x${b.toString(16)}`);
+        throw new ShipShapeError("UNEXPECTED_TOKEN", `Unexpected number token: 0x${b.toString(16)}`);
     }
   }
 
@@ -253,7 +253,7 @@ export class BinaryReader {
   expectNumber(expected: number): void {
     const actual = this.nextNumberAsNumber();
     if (actual !== expected) {
-      throw new DsaBpError("UNEXPECTED_TOKEN", `Expected ${expected} but was ${actual}`);
+      throw new ShipShapeError("UNEXPECTED_TOKEN", `Expected ${expected} but was ${actual}`);
     }
   }
 
@@ -312,14 +312,14 @@ export class BinaryReader {
       case "bytes":
         return `[${Array.from(this.nextBytes()).join(", ")}]`;
       case "end":
-        throw new DsaBpError("UNEXPECTED_TOKEN", "No more data to read");
+        throw new ShipShapeError("UNEXPECTED_TOKEN", "No more data to read");
     }
   }
 
   private expectToken(expected: TokenType): void {
     const actual = this.peek();
     if (actual !== expected) {
-      throw new DsaBpError("UNEXPECTED_TOKEN", `Expected ${expected}, but was ${actual}`);
+      throw new ShipShapeError("UNEXPECTED_TOKEN", `Expected ${expected}, but was ${actual}`);
     }
   }
 
@@ -332,7 +332,7 @@ export class BinaryReader {
       case 4:
         return this.readInt32();
       default:
-        throw new DsaBpError("UNEXPECTED_TOKEN", "Invalid length size");
+        throw new ShipShapeError("UNEXPECTED_TOKEN", "Invalid length size");
     }
   }
 

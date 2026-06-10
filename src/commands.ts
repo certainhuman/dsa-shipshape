@@ -3,7 +3,7 @@ import {
   parseConfigurationPayload,
   serializeConfigurationPayload
 } from "./configs";
-import { DsaBpError } from "./errors";
+import { ShipShapeError } from "./errors";
 import type {
   BlueprintCommand,
   BuildCommand,
@@ -73,7 +73,7 @@ export function createBuildCommand(
   for (const position of positions) {
     const offset = position - baseX;
     if (!isValidBitOffset(offset)) {
-      throw new DsaBpError("INVALID_BLUEPRINT", `Invalid build bit offset: ${offset}`);
+      throw new ShipShapeError("INVALID_BLUEPRINT", `Invalid build bit offset: ${offset}`);
     }
     bits |= 1n << BigInt(Math.round(offset));
   }
@@ -88,7 +88,7 @@ function parseCommandBody(commandType: number, reader: BinaryReader): BlueprintC
     case 1:
       return parseConfigurationCommand(reader);
     default:
-      throw new DsaBpError("INVALID_BLUEPRINT", `Unknown command type: ${commandType}`);
+      throw new ShipShapeError("INVALID_BLUEPRINT", `Unknown command type: ${commandType}`);
   }
 }
 
@@ -102,7 +102,7 @@ function parseBuildCommand(reader: BinaryReader): BuildCommand {
   if (reader.peek() !== "array_end") {
     bits = reader.nextNumberAsBigInt();
     if (bits === 0n) {
-      throw new DsaBpError("INVALID_BLUEPRINT", "Invalid BITS value in build command");
+      throw new ShipShapeError("INVALID_BLUEPRINT", "Invalid BITS value in build command");
     }
   }
 

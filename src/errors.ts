@@ -1,4 +1,4 @@
-export type DsaBpErrorCode =
+export type ShipShapeErrorCode =
   | "INVALID_BLUEPRINT"
   | "INVALID_CONFIG"
   | "SIZE_LIMIT"
@@ -17,13 +17,13 @@ export type DsaBpErrorCode =
   | "UNKNOWN_CONFIG"
   | "ENCODE_FAILED";
 
-export class DsaBpError extends Error {
+export class ShipShapeError extends Error {
   constructor(
-    public readonly code: DsaBpErrorCode,
+    public readonly code: ShipShapeErrorCode,
     message: string,
     public readonly cause?: unknown
   ) {
     super(message);
-    this.name = "DsaBpError";
+    this.name = "ShipShapeError";
   }
 }
