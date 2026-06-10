@@ -82,9 +82,19 @@ const outputCode = Blueprint.encode(outputBlueprint, { prefix: true }); // Encod
 
 _Further docs are available in the [API Guide](docs/api-guide.md)._
 
+## Dev Setup
+
 ```sh
 npm install # Install dependencies
 npm run typecheck # Check for type errors
 npm test # Run tests
 npm run build # Build
+```
+
+Shortcuts are available with [`just`](https://github.com/casey/just):
+
+```sh
+just check # Run typecheck and tests
+just build # Build package outputs
+just pack # Preview the npm package contents
 ```
