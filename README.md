@@ -1,8 +1,6 @@
 # dsa-shipshape
 
-shipshape is a TypeScript library for parsing, editing, and encoding Deep Space Airships ([drednot.io](https://drednot.io)) blueprint strings.
-
-Use this package when you want to read an existing DSA blueprint, generate a new one, or make programmatic edits without handling the compressed binary blueprint format yourself.
+Shipshape is a TypeScript library for parsing, editing, and encoding Deep Space Airships ([drednot.io](https://drednot.io)) blueprint strings.
 
 ## Install
 
