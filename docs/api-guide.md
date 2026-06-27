@@ -338,4 +338,4 @@ try {
 }
 ```
 
-Check `error.code` to distinguish failure categories such as invalid blueprints, invalid configs, unexpected tokens, and size limits.
+Check `error.code` to distinguish failure categories such as invalid blueprints, invalid configs, unexpected tokens, and size limits. Compression and decompression failures use `ENCODE_FAILED` and `DEFLATE_FAILED`, with the original error available on `error.cause`.
