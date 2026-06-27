@@ -46,7 +46,7 @@ function decode(input: string): BlueprintData {
   }
 
   const compressed = base64ToBytes(base64);
-  const decompressed = inflateSync(compressed);
+  const decompressed = inflateBlueprint(compressed);
   if (decompressed.length > MAX_DECOMPRESSED_SIZE) {
     throw new ShipShapeError("SIZE_LIMIT", "Decompressed data exceeds maximum size");
   }
@@ -102,7 +102,7 @@ function encode(blueprint: BlueprintData, options: { prefix?: boolean } = {}): s
   writer.endArray();
   writer.endArray();
 
-  const compressed = deflateSync(writer.toBytes(), { level: 9 });
+  const compressed = deflateBlueprint(writer.toBytes());
   const base64 = bytesToBase64(compressed);
   if (base64.length > MAX_WRAPPER_SIZE) {
     throw new ShipShapeError("SIZE_LIMIT", "Resulting Base64 string exceeds maximum size");
@@ -185,6 +185,22 @@ function cloneCommand(command: BlueprintCommand): BlueprintCommand {
   }
 
   return { ...command };
+}
+
+function inflateBlueprint(compressed: Uint8Array): Uint8Array {
+  try {
+    return inflateSync(compressed);
+  } catch (cause) {
+    throw new ShipShapeError("DEFLATE_FAILED", "Failed to decompress blueprint data", cause);
+  }
+}
+
+function deflateBlueprint(decompressed: Uint8Array): Uint8Array {
+  try {
+    return deflateSync(decompressed, { level: 9 });
+  } catch (cause) {
+    throw new ShipShapeError("ENCODE_FAILED", "Failed to compress blueprint data", cause);
+  }
 }
 
 function base64ToBytes(base64: string): Uint8Array {
