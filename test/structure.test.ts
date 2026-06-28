@@ -223,6 +223,27 @@ describe("Structure", () => {
     ]);
   });
 
+  it("clones editable structure state", () => {
+    const structure = new Structure(10, 10);
+    const id = structure.place(Item.LOADER_PACKAGED, 2, 3, {
+      shape: 4,
+      configs: [pusherConfig()],
+      priority: 7
+    });
+
+    const clone = structure.clone();
+
+    expect(clone).not.toBe(structure);
+    expect(clone.width).toBe(10);
+    expect(clone.height).toBe(10);
+    expect(clone.getAll()).toEqual(structure.getAll());
+
+    clone.config(id, []);
+    expect(clone.get(id)?.configs).toEqual([]);
+    expect(structure.get(id)?.configs).toEqual([pusherConfig()]);
+    expect(clone.place(Item.IRON_BLOCK, 4, 3)).toBe(id + 1);
+  });
+
   it("traverses mixed-item staged builds across rows, columns, and stages", () => {
     const structure = new Structure(10, 10);
     structure.place(Item.LOADER_PACKAGED, 4, 5);

@@ -172,6 +172,7 @@ Instance methods:
 - `config(id, configs)`: replaces the config list for one placement.
 - `get(id)`: returns a copy of one placement.
 - `getAll()`: returns copies of all placements.
+- `clone()`: returns an independent editable copy with the same dimensions, placements, editing IDs, and serial ID state.
 - `count(item)`: counts placements matching an item ID.
 - `map(mapper)`: replaces every placement with the mapper result.
 - `sanitize(options?)`: fixes easily-correctable issues in place, such as shape data on unsupported tiles.

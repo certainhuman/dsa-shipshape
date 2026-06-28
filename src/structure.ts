@@ -149,6 +149,17 @@ export class Structure {
   }
 
   /**
+   * Creates an independent editable copy of this structure.
+   */
+  clone(): Structure {
+    const structure = new Structure(this.width, this.height);
+    structure.builds = this.builds.map(cloneBuild);
+    structure.serialId = this.serialId;
+    structure.rebuildBuildIndex();
+    return structure;
+  }
+
+  /**
    * Counts placed items with a matching item ID.
    */
   count(item: number): number {
