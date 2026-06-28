@@ -1,6 +1,6 @@
 {
   "name": "dsa-shipshape",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "TypeScript utilities for parsing, editing, and encoding Deep Space Airships blueprints for drednot.io.",
   "license": "MIT",
   "homepage": "https://github.com/certainhuman/dsa-shipshape#readme",
