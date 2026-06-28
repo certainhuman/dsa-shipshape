@@ -1,6 +1,12 @@
 import { deflateSync, inflateSync } from "fflate";
 import { BinaryReader, BinaryWriter } from "./binary";
-import { MAX_BUILD_COMMANDS, MAX_DECOMPRESSED_SIZE, MAX_WRAPPER_SIZE } from "./constants";
+import {
+  MAX_BUILD_COMMANDS,
+  MAX_DECOMPRESSED_SIZE,
+  MAX_WRAPPER_SIZE,
+  SHAPE_REJECTING_TILE_ITEMS,
+  SHAPE_SUPPORTING_TILE_ITEMS
+} from "./constants";
 import { createBuildCommand, parseCommand, serializeCommand } from "./commands";
 import { ShipShapeError } from "./errors";
 import type { Blueprint as BlueprintData, BlueprintCommand, ConfigData } from "./types";
@@ -124,6 +130,32 @@ function create(width: number, height: number, commands: readonly BlueprintComma
 }
 
 /**
+ * Returns blueprint data with easily-correctable issues fixed.
+ */
+function sanitize(
+  blueprint: BlueprintData,
+  options: { onlyStrictlyUnsupportedShapes?: boolean } = {}
+): BlueprintData {
+  return {
+    version: blueprint.version,
+    width: blueprint.width,
+    height: blueprint.height,
+    commands: blueprint.commands.map((command): BlueprintCommand => {
+      if (command.type === "configuration") {
+        return { type: "configuration", configs: [...command.configs] };
+      }
+
+      const shouldRemoveShape = options.onlyStrictlyUnsupportedShapes
+        ? SHAPE_REJECTING_TILE_ITEMS.includes(command.item)
+        : !SHAPE_SUPPORTING_TILE_ITEMS.includes(command.item);
+      return {
+        ...command,
+        shape: shouldRemoveShape ? 0 : command.shape
+      };
+    })
+  };
+}
+/**
  * Creates a sequential builder for raw blueprint commands.
  */
 function builder(width: number, height: number): BlueprintBuilder {
@@ -172,6 +204,11 @@ export const Blueprint = {
    * Creates a blueprint object from dimensions and commands.
    */
   create,
+
+  /**
+   * Returns blueprint data with easily-correctable issues fixed.
+   */
+  sanitize,
 
   /**
    * Creates a sequential builder for raw blueprint commands.

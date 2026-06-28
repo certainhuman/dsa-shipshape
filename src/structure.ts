@@ -5,6 +5,7 @@ import {
 } from "./build-order";
 import { configKey, configsEqual, normalizeConfigs } from "./configs";
 import { getBuildPositions } from "./commands";
+import { SHAPE_REJECTING_TILE_ITEMS, SHAPE_SUPPORTING_TILE_ITEMS } from "./constants";
 import { TraversalAxis, TraversalDirection } from "./enums";
 import { ShipShapeError } from "./errors";
 import type { Blueprint, BlueprintCommand, BuildCommand, ConfigData } from "./types";
@@ -160,6 +161,18 @@ export class Structure {
   map(mapper: (build: StructureBuild) => StructureBuild): void {
     this.builds = this.builds.map((build) => mapper(cloneBuild(build)));
     this.rebuildBuildIndex();
+  }
+
+  /**
+   * Automatically fixes easily-correctable structure issues.
+   */
+  sanitize(options: { onlyStrictlyUnsupportedShapes?: boolean } = {}): void {
+    for (const build of this.builds) {
+      const shouldRemoveShape = options.onlyStrictlyUnsupportedShapes
+        ? SHAPE_REJECTING_TILE_ITEMS.includes(build.item)
+        : !SHAPE_SUPPORTING_TILE_ITEMS.includes(build.item);
+      if (shouldRemoveShape) build.shape = 0;
+    }
   }
 
   /**

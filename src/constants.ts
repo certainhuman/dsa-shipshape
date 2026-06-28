@@ -154,6 +154,21 @@ export const Item = {
   BETA_SLUG_AMMO: 405
 } as const;
 
+
+export const SHAPE_SUPPORTING_TILE_ITEMS: readonly number[] = [
+  Item.IRON_BLOCK,
+  Item.ITEM_NET,
+  Item.HYPER_RUBBER_BLOCK,
+  Item.HYPER_ICE_BLOCK,
+  Item.WALKWAY
+];
+
+export const SHAPE_REJECTING_TILE_ITEMS: readonly number[] = [
+  Item.LOGISTICS_RAIL,
+  Item.ANNIHILATOR_TILE,
+  Item.LADDER
+];
+
 export const ITEMS = Object.values(Item);
 export type ItemId = (typeof ITEMS)[number];
 

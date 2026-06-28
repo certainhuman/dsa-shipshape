@@ -69,4 +69,31 @@ describe("blueprint encoding", () => {
       }
     ]);
   });
+  it("sanitizes shape data from blueprint commands", () => {
+    const build = (item: number, shape: number) => ({
+      type: "build" as const,
+      x: 1,
+      y: 1,
+      item,
+      bits: 1n,
+      shape
+    });
+    const blueprint = Blueprint.create(10, 10, [
+      build(Item.IRON_BLOCK, 2),
+      build(Item.LOADER_PACKAGED, 3),
+      build(Item.LADDER, 4)
+    ]);
+
+    expect(Blueprint.sanitize(blueprint).commands.map((command) => command.type === "build" && command.shape)).toEqual([
+      2,
+      0,
+      0
+    ]);
+    expect(Blueprint.sanitize(blueprint, { onlyStrictlyUnsupportedShapes: true }).commands).toMatchObject([
+      { shape: 2 },
+      { shape: 3 },
+      { shape: 0 }
+    ]);
+    expect(blueprint.commands).toMatchObject([{ shape: 2 }, { shape: 3 }, { shape: 4 }]);
+  });
 });

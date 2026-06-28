@@ -258,4 +258,23 @@ describe("Structure", () => {
       [Item.LOADER_PACKAGED, 1, 5, 0b1011n]
     ]);
   });
+  it("sanitizes shape data from structure tiles", () => {
+    const structure = new Structure(10, 10);
+    const iron = structure.place(Item.IRON_BLOCK, 1, 1, { shape: 2 });
+    const loader = structure.place(Item.LOADER_PACKAGED, 2, 1, { shape: 3 });
+    const ladder = structure.place(Item.LADDER, 3, 1, { shape: 4 });
+
+    structure.sanitize();
+
+    expect(structure.get(iron)?.shape).toBe(2);
+    expect(structure.get(loader)?.shape).toBe(0);
+    expect(structure.get(ladder)?.shape).toBe(0);
+
+    structure.map((build) => ({ ...build, shape: build.id + 1 }));
+    structure.sanitize({ onlyStrictlyUnsupportedShapes: true });
+
+    expect(structure.get(iron)?.shape).toBe(iron + 1);
+    expect(structure.get(loader)?.shape).toBe(loader + 1);
+    expect(structure.get(ladder)?.shape).toBe(0);
+  });
 });
