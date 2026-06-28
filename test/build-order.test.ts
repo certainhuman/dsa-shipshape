@@ -50,7 +50,7 @@ describe("BuildOrder", () => {
     const order = BuildOrder.GAME_DEFAULT.last(Item.IRON_BLOCK, Item.LOADER_PACKAGED);
 
     expect(order.items(1)).not.toContain(Item.IRON_BLOCK);
-    expect(order.items(3)).not.toContain(Item.LOADER_PACKAGED);
+    expect(order.items(2)).not.toContain(Item.LOADER_PACKAGED);
     expect(order.items(6)).toEqual([Item.IRON_BLOCK, Item.LOADER_PACKAGED]);
     expect(order.stageOf(Item.IRON_BLOCK)).toBe(6);
     expect(order.stageOf(Item.LOADER_PACKAGED)).toBe(6);

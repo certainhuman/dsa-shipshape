@@ -263,15 +263,26 @@ const order = new BuildOrder.Staged({
   .direction(5, TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT);
 ```
 
-Constructors and defaults:
+#### Constructors:
+- `new BuildOrder.Staged(options?)`: creates a staged build order. Unless contents are specified, it is empty.
+- `new BuildOrder.Flat(itemIds?, options?)`: creates a flat build order. Unless contents are specified, it is empty.
+- `new BuildOrder.Sequential(itemIds?, options?)`: creates a sequential build order. Unless contents are specified, it is empty.
 
-- `BuildOrder.GAME_DEFAULT`: the staged build order that mimics the in-game encoder as closely as possible.
-- `new BuildOrder.Staged(options?)`: creates a staged build order. With no options, it is empty.
-- `BuildOrder.Staged.DEFAULT`: the default staged build order.
-- `new BuildOrder.Flat(itemIds?, options?)`: creates a flat build order. With no item IDs, it is empty.
-- `BuildOrder.Flat.DEFAULT`: the default flat build order.
-- `new BuildOrder.Sequential(itemIds?, options?)`: creates a sequential build order. With no item IDs, it is empty.
-- `BuildOrder.Sequential.DEFAULT`: the default sequential build order.
+
+#### Presets:
+- `BuildOrder.GAME_DEFAULT`: a staged build order that mimics the in-game encoder as closely as possible.
+- `BuildOrder.Staged.DEFAULT`: the same staged build order as `BuildOrder.GAME_DEFAULT`.
+- `BuildOrder.Flat.DEFAULT`: the same default items flattened into one stage.
+- `BuildOrder.Sequential.DEFAULT`: the same default items flattened into one item per stage.
+
+The preset item order is:
+
+- Stage 1: `Item.IRON_BLOCK`, `Item.ANNIHILATOR_TILE`, `Item.HYPER_ICE_BLOCK`, `Item.HYPER_RUBBER_BLOCK`, `Item.WALKWAY`, `Item.ITEM_NET`, `Item.LOGISTICS_RAIL`, `Item.LADDER`.
+- Stage 2: `Item.TURRET_CONTROLLER_PACKAGED`, `Item.THRUSTER_PACKAGED`, `Item.THRUSTER_STARTER_PACKAGED`, `Item.CANNON_PACKAGED`, `Item.STARTER_CANNON_PACKAGED`, `Item.BURST_CANNON_PACKAGED`, `Item.MACHINE_CANNON_PACKAGED`, `Item.OBTUSE_CANNON_PACKAGED`, `Item.ACUTE_CANNON_PACKAGED`, `Item.FABRICATOR_ENGINEERING_PACKAGED`, `Item.FABRICATOR_EQUIPMENT_PACKAGED`, `Item.FABRICATOR_MUNITIONS_PACKAGED`, `Item.FABRICATOR_STARTER_PACKAGED`, `Item.FABRICATOR_LEGACY_PACKAGED`, `Item.HELM_PACKAGED`, `Item.HELM_STARTER_PACKAGED`, `Item.COMMS_STATION_PACKAGED`, `Item.RECYCLER_PACKAGED`, `Item.SHIELD_PROJECTOR`, `Item.FLUID_TANK`, `Item.MUNITIONS_SUPPLY_UNIT_PACKAGED`, `Item.LOADER_PACKAGED`, `Item.PUSHER_PACKAGED`, `Item.SHIELD_GENERATOR`, `Item.CARGO_EJECTOR_PACKAGED`, `Item.NAVIGATION_UNIT_STARTER_PACKAGED`.
+- Stage 4: `Item.EXPANDO_BOX_PACKAGED`.
+- Stage 5: `Item.CARGO_HATCH_PACKAGED`, `Item.CARGO_HATCH_STARTER_PACKAGED`.
+
+Stage 4 uses `TraversalDirection.NONE`; all other preset stages use `TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT`. All preset stages use `TraversalAxis.HORIZONTAL`.
 
 The `BuildOrder` interface is the encoder-facing contract. It exposes `toStages()` plus build-chain settings so `Structure.toBlueprint()` can read a staged plan. The concrete implementations expose their own customization methods instead of sharing one broad editing API.
 

@@ -164,11 +164,47 @@ export function serializeConfigurationPayload(configs: readonly ConfigData[]): U
 }
 
 export function configKey(configs: readonly ConfigData[]): string {
-  return JSON.stringify(configs);
+  return JSON.stringify(normalizeConfigs(configs));
 }
 
 export function configsEqual(a: readonly ConfigData[], b: readonly ConfigData[]): boolean {
   return configKey(a) === configKey(b);
+}
+
+export function normalizeConfigs(configs: readonly ConfigData[]): ConfigData[] {
+  return configs.filter((config) => !isDefaultConfig(config));
+}
+
+function isDefaultConfig(config: ConfigData): boolean {
+  switch (config.type) {
+    case "config_loader":
+      return false;
+    case "config_pusher":
+      return (
+        config.defaultAction === PusherAction.DO_NOTHING &&
+        config.filterAction === PusherAction.PULL &&
+        config.angle === 0 &&
+        config.targetSpeed === 20 &&
+        config.filterByInventory === false &&
+        config.maxBeamLength === 1000
+      );
+    case "config_nav_unit":
+      return (
+        config.destinationIndex === 10 &&
+        config.page === 0 &&
+        config.warpActive === false &&
+        config.warpOnCritical === true &&
+        config.warpOnNoCaptains === true
+      );
+    case "angle_fixed":
+      return config.direction === Direction.RIGHT;
+    case "angle":
+      return config.angle === 0;
+    case "filter_config":
+      return config.filterType === FilterType.ALLOW_ALL;
+    case "filter_items":
+      return config.items.every((item) => item === 0);
+  }
 }
 
 function parseConfig(configName: string, reader: BinaryReader): ConfigData {

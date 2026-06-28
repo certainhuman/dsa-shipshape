@@ -49,6 +49,7 @@ export interface SequentialBuildOrderOptions {
 export const DEFAULT_STAGE_ITEMS: StageItems = {
   1: [
     Item.IRON_BLOCK,
+    Item.ANNIHILATOR_TILE,
     Item.HYPER_ICE_BLOCK,
     Item.HYPER_RUBBER_BLOCK,
     Item.WALKWAY,
@@ -77,9 +78,7 @@ export const DEFAULT_STAGE_ITEMS: StageItems = {
     Item.RECYCLER_PACKAGED,
     Item.SHIELD_PROJECTOR,
     Item.FLUID_TANK,
-    Item.MUNITIONS_SUPPLY_UNIT_PACKAGED
-  ],
-  3: [
+    Item.MUNITIONS_SUPPLY_UNIT_PACKAGED,
     Item.LOADER_PACKAGED,
     Item.PUSHER_PACKAGED,
     Item.SHIELD_GENERATOR,

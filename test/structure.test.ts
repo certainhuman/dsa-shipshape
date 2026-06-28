@@ -3,9 +3,11 @@ import {
   BuildOrder,
   Item,
   FilterType,
+  PusherAction,
   Structure,
   TraversalAxis,
   TraversalDirection,
+  pusherConfig,
   type BuildCommand
 } from "../src";
 
@@ -77,6 +79,42 @@ describe("Structure", () => {
       y: 9,
       bits: 0b101010101n
     });
+  });
+
+  it("groups default configs with no config first", () => {
+    const structure = new Structure(10, 10);
+    structure.place(Item.PUSHER_PACKAGED, 4, 2, {
+      configs: [pusherConfig({ defaultAction: PusherAction.PUSH })]
+    });
+    structure.place(Item.PUSHER_PACKAGED, 1, 2);
+    structure.place(Item.PUSHER_PACKAGED, 2, 2, {
+      configs: [pusherConfig()]
+    });
+
+    const blueprint = structure.toBlueprint(new BuildOrder.Flat([Item.PUSHER_PACKAGED]));
+
+    expect(blueprint.commands).toEqual([
+      {
+        type: "build",
+        x: 1,
+        y: 2,
+        item: Item.PUSHER_PACKAGED,
+        bits: 0b11n,
+        shape: 0
+      },
+      {
+        type: "configuration",
+        configs: [pusherConfig({ defaultAction: PusherAction.PUSH })]
+      },
+      {
+        type: "build",
+        x: 4,
+        y: 2,
+        item: Item.PUSHER_PACKAGED,
+        bits: 1n,
+        shape: 0
+      }
+    ]);
   });
 
   it("can traverse builds vertically by column", () => {

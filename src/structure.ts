@@ -3,7 +3,7 @@ import {
   type BuildOrder,
   type BuildOrderStage
 } from "./build-order";
-import { configKey, configsEqual } from "./configs";
+import { configKey, configsEqual, normalizeConfigs } from "./configs";
 import { getBuildPositions } from "./commands";
 import { TraversalAxis, TraversalDirection } from "./enums";
 import { ShipShapeError } from "./errors";
@@ -277,9 +277,11 @@ function getConfigGroups(builds: StructureBuild[]): ConfigRun[] {
     const key = configKey(build.configs);
     const existing = groups.get(key);
     if (existing) existing.builds.push(build);
-    else groups.set(key, { configs: build.configs, builds: [build] });
+    else groups.set(key, { configs: normalizeConfigs(build.configs), builds: [build] });
   }
-  return [...groups.values()];
+  return [...groups.values()].sort((a, b) =>
+    Number(a.configs.length > 0) - Number(b.configs.length > 0)
+  );
 }
 
 function getConfigRuns(builds: StructureBuild[]): ConfigRun[] {
@@ -292,7 +294,7 @@ function getConfigRuns(builds: StructureBuild[]): ConfigRun[] {
       if (currentRun.length > 0 && currentConfig) {
         runs.push({ configs: currentConfig, builds: currentRun });
       }
-      currentConfig = build.configs;
+      currentConfig = normalizeConfigs(build.configs);
       currentRun = [];
     }
     currentRun.push(build);
