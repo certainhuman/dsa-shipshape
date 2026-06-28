@@ -85,12 +85,12 @@ export const DEFAULT_STAGE_ITEMS: StageItems = {
     Item.CARGO_EJECTOR_PACKAGED,
     Item.NAVIGATION_UNIT_STARTER_PACKAGED
   ],
-  4: [Item.EXPANDO_BOX_PACKAGED],
-  5: [Item.CARGO_HATCH_PACKAGED, Item.CARGO_HATCH_STARTER_PACKAGED]
+  3: [Item.EXPANDO_BOX_PACKAGED],
+  4: [Item.CARGO_HATCH_PACKAGED, Item.CARGO_HATCH_STARTER_PACKAGED]
 };
 
 export const DEFAULT_STAGE_DIRECTIONS: StageDirections = {
-  4: TraversalDirection.NONE
+  3: TraversalDirection.NONE
 };
 
 /**

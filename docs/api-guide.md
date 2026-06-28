@@ -259,8 +259,8 @@ const order = new BuildOrder.Staged({
   followTraversalStrictly: true
 })
   .without(Item.EXPANDO_BOX_PACKAGED)
-  .with(5, Item.EXPANDO_BOX_PACKAGED)
-  .direction(5, TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT);
+  .with(4, Item.EXPANDO_BOX_PACKAGED)
+  .direction(4, TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT);
 ```
 
 #### Constructors:
@@ -279,10 +279,10 @@ The preset item order is:
 
 - Stage 1: `Item.IRON_BLOCK`, `Item.ANNIHILATOR_TILE`, `Item.HYPER_ICE_BLOCK`, `Item.HYPER_RUBBER_BLOCK`, `Item.WALKWAY`, `Item.ITEM_NET`, `Item.LOGISTICS_RAIL`, `Item.LADDER`.
 - Stage 2: `Item.TURRET_CONTROLLER_PACKAGED`, `Item.THRUSTER_PACKAGED`, `Item.THRUSTER_STARTER_PACKAGED`, `Item.CANNON_PACKAGED`, `Item.STARTER_CANNON_PACKAGED`, `Item.BURST_CANNON_PACKAGED`, `Item.MACHINE_CANNON_PACKAGED`, `Item.OBTUSE_CANNON_PACKAGED`, `Item.ACUTE_CANNON_PACKAGED`, `Item.FABRICATOR_ENGINEERING_PACKAGED`, `Item.FABRICATOR_EQUIPMENT_PACKAGED`, `Item.FABRICATOR_MUNITIONS_PACKAGED`, `Item.FABRICATOR_STARTER_PACKAGED`, `Item.FABRICATOR_LEGACY_PACKAGED`, `Item.HELM_PACKAGED`, `Item.HELM_STARTER_PACKAGED`, `Item.COMMS_STATION_PACKAGED`, `Item.RECYCLER_PACKAGED`, `Item.SHIELD_PROJECTOR`, `Item.FLUID_TANK`, `Item.MUNITIONS_SUPPLY_UNIT_PACKAGED`, `Item.LOADER_PACKAGED`, `Item.PUSHER_PACKAGED`, `Item.SHIELD_GENERATOR`, `Item.CARGO_EJECTOR_PACKAGED`, `Item.NAVIGATION_UNIT_STARTER_PACKAGED`.
-- Stage 4: `Item.EXPANDO_BOX_PACKAGED`.
-- Stage 5: `Item.CARGO_HATCH_PACKAGED`, `Item.CARGO_HATCH_STARTER_PACKAGED`.
+- Stage 3: `Item.EXPANDO_BOX_PACKAGED`.
+- Stage 4: `Item.CARGO_HATCH_PACKAGED`, `Item.CARGO_HATCH_STARTER_PACKAGED`.
 
-Stage 4 uses `TraversalDirection.NONE`; all other preset stages use `TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT`. All preset stages use `TraversalAxis.HORIZONTAL`.
+Stage 3 uses `TraversalDirection.NONE`; all other preset stages use `TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT`. All preset stages use `TraversalAxis.HORIZONTAL`.
 
 The `BuildOrder` interface is the encoder-facing contract. It exposes `toStages()` plus build-chain settings so `Structure.toBlueprint()` can read a staged plan. The concrete implementations expose their own customization methods instead of sharing one broad editing API.
 
@@ -295,8 +295,8 @@ const order = new BuildOrder.Staged({
   followTraversalStrictly: true
 })
   .without(Item.EXPANDO_BOX_PACKAGED)
-  .with(5, Item.EXPANDO_BOX_PACKAGED)
-  .direction(5, TraversalDirection.NONE);
+  .with(4, Item.EXPANDO_BOX_PACKAGED)
+  .direction(4, TraversalDirection.NONE);
 ```
 
 Stage indexes are numeric ordering keys. They do not need to be contiguous or positive; stages are encoded in ascending numeric order.
@@ -318,7 +318,7 @@ Customization methods:
 ```ts
 const order = BuildOrder.GAME_DEFAULT
   .axis(TraversalAxis.VERTICAL)
-  .axis(4, TraversalAxis.HORIZONTAL);
+  .axis(3, TraversalAxis.HORIZONTAL);
 ```
 
 ### BuildOrder.Flat

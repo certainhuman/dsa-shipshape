@@ -13,17 +13,17 @@ describe("BuildOrder", () => {
     const baseOrder = BuildOrder.GAME_DEFAULT;
     const order = baseOrder
       .without(Item.EXPANDO_BOX_PACKAGED)
-      .with(5, Item.EXPANDO_BOX_PACKAGED)
-      .direction(5, TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT);
+      .with(4, Item.EXPANDO_BOX_PACKAGED)
+      .direction(4, TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT);
 
-    expect(baseOrder.items(4)).toContain(Item.EXPANDO_BOX_PACKAGED);
-    expect(baseOrder.directionOf(5)).toBe(TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT);
+    expect(baseOrder.items(3)).toContain(Item.EXPANDO_BOX_PACKAGED);
+    expect(baseOrder.directionOf(4)).toBe(TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT);
 
-    expect(order.items(4)).not.toContain(Item.EXPANDO_BOX_PACKAGED);
-    expect(order.items(5)).toContain(Item.EXPANDO_BOX_PACKAGED);
-    expect(order.stageOf(Item.EXPANDO_BOX_PACKAGED)).toBe(5);
-    expect(order.directionOf(5)).toBe(TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT);
-    expect(order.numStages()).toBe(5);
+    expect(order.items(3)).not.toContain(Item.EXPANDO_BOX_PACKAGED);
+    expect(order.items(4)).toContain(Item.EXPANDO_BOX_PACKAGED);
+    expect(order.stageOf(Item.EXPANDO_BOX_PACKAGED)).toBe(4);
+    expect(order.directionOf(4)).toBe(TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT);
+    expect(order.numStages()).toBe(4);
   });
 
   it("moves staged items instead of duplicating them across stages", () => {
@@ -41,7 +41,7 @@ describe("BuildOrder", () => {
 
     expect(order.items(0)).toEqual([Item.CARGO_HATCH_PACKAGED]);
     expect(order.items(1)).toContain(Item.IRON_BLOCK);
-    expect(order.items(5)).not.toContain(Item.CARGO_HATCH_PACKAGED);
+    expect(order.items(4)).not.toContain(Item.CARGO_HATCH_PACKAGED);
     expect(order.stageOf(Item.CARGO_HATCH_PACKAGED)).toBe(0);
     expect(order.directionOf(1)).toBe(TraversalDirection.NONE);
   });
@@ -51,9 +51,9 @@ describe("BuildOrder", () => {
 
     expect(order.items(1)).not.toContain(Item.IRON_BLOCK);
     expect(order.items(2)).not.toContain(Item.LOADER_PACKAGED);
-    expect(order.items(6)).toEqual([Item.IRON_BLOCK, Item.LOADER_PACKAGED]);
-    expect(order.stageOf(Item.IRON_BLOCK)).toBe(6);
-    expect(order.stageOf(Item.LOADER_PACKAGED)).toBe(6);
+    expect(order.items(5)).toEqual([Item.IRON_BLOCK, Item.LOADER_PACKAGED]);
+    expect(order.stageOf(Item.IRON_BLOCK)).toBe(5);
+    expect(order.stageOf(Item.LOADER_PACKAGED)).toBe(5);
   });
 
   it("orders staged builds by numeric stage key", () => {
@@ -115,16 +115,16 @@ describe("BuildOrder", () => {
 
     expect(order.directionOf(1)).toBe(TraversalDirection.NONE);
     expect(order.directionOf(2)).toBe(TraversalDirection.NONE);
-    expect(order.directionOf(5)).toBe(TraversalDirection.NONE);
+    expect(order.directionOf(4)).toBe(TraversalDirection.NONE);
   });
 
   it("customizes staged traversal axes globally and per stage", () => {
     const order = BuildOrder.GAME_DEFAULT
       .axis(TraversalAxis.VERTICAL)
-      .axis(4, TraversalAxis.HORIZONTAL);
+      .axis(3, TraversalAxis.HORIZONTAL);
 
     expect(order.axisOf(1)).toBe(TraversalAxis.VERTICAL);
-    expect(order.axisOf(4)).toBe(TraversalAxis.HORIZONTAL);
+    expect(order.axisOf(3)).toBe(TraversalAxis.HORIZONTAL);
     expect(order.toStages()[0]).toMatchObject({
       axis: TraversalAxis.VERTICAL
     });
