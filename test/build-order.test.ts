@@ -3,6 +3,7 @@ import {
   BuildOrder,
   Item,
   Structure,
+  TraversalAxis,
   TraversalDirection,
   type BuildOrder as BuildOrderContract
 } from "../src";
@@ -71,15 +72,18 @@ describe("BuildOrder", () => {
     expect(order.toStages()).toEqual([
       {
         items: [Item.IRON_BLOCK],
-        direction: TraversalDirection.NONE
+        direction: TraversalDirection.NONE,
+        axis: TraversalAxis.HORIZONTAL
       },
       {
         items: [Item.WALKWAY],
-        direction: TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT
+        direction: TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT,
+        axis: TraversalAxis.HORIZONTAL
       },
       {
         items: [Item.CARGO_HATCH_PACKAGED],
-        direction: TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT
+        direction: TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT,
+        axis: TraversalAxis.HORIZONTAL
       }
     ]);
   });
@@ -114,6 +118,18 @@ describe("BuildOrder", () => {
     expect(order.directionOf(5)).toBe(TraversalDirection.NONE);
   });
 
+  it("customizes staged traversal axes globally and per stage", () => {
+    const order = BuildOrder.GAME_DEFAULT
+      .axis(TraversalAxis.VERTICAL)
+      .axis(4, TraversalAxis.HORIZONTAL);
+
+    expect(order.axisOf(1)).toBe(TraversalAxis.VERTICAL);
+    expect(order.axisOf(4)).toBe(TraversalAxis.HORIZONTAL);
+    expect(order.toStages()[0]).toMatchObject({
+      axis: TraversalAxis.VERTICAL
+    });
+  });
+
   it("keeps staged factory construction equivalent to direct construction", () => {
     const order = new BuildOrder.Staged({ followTraversalStrictly: true });
 
@@ -145,7 +161,21 @@ describe("BuildOrder", () => {
     expect(order.toStages()).toEqual([
       {
         items: [Item.IRON_BLOCK, Item.LOADER_PACKAGED],
-        direction: TraversalDirection.NONE
+        direction: TraversalDirection.NONE,
+        axis: TraversalAxis.HORIZONTAL
+      }
+    ]);
+  });
+
+  it("customizes flat traversal axis", () => {
+    const order = new BuildOrder.Flat([Item.IRON_BLOCK])
+      .axis(TraversalAxis.VERTICAL);
+
+    expect(order.toStages()).toEqual([
+      {
+        items: [Item.IRON_BLOCK],
+        direction: TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT,
+        axis: TraversalAxis.VERTICAL
       }
     ]);
   });
@@ -171,15 +201,18 @@ describe("BuildOrder", () => {
     expect(order.toStages()).toEqual([
       {
         items: [Item.IRON_BLOCK],
-        direction: TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT
+        direction: TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT,
+        axis: TraversalAxis.HORIZONTAL
       },
       {
         items: [Item.CARGO_HATCH_PACKAGED],
-        direction: TraversalDirection.NONE
+        direction: TraversalDirection.NONE,
+        axis: TraversalAxis.HORIZONTAL
       },
       {
         items: [Item.WALKWAY],
-        direction: TraversalDirection.NONE
+        direction: TraversalDirection.NONE,
+        axis: TraversalAxis.HORIZONTAL
       }
     ]);
   });
@@ -193,11 +226,41 @@ describe("BuildOrder", () => {
     expect(order.toStages()).toEqual([
       {
         items: [Item.IRON_BLOCK],
-        direction: TraversalDirection.NONE
+        direction: TraversalDirection.NONE,
+        axis: TraversalAxis.HORIZONTAL
       },
       {
         items: [Item.WALKWAY],
-        direction: TraversalDirection.NONE
+        direction: TraversalDirection.NONE,
+        axis: TraversalAxis.HORIZONTAL
+      }
+    ]);
+  });
+
+  it("customizes sequential traversal axes globally and per item", () => {
+    const order = new BuildOrder.Sequential([
+      Item.IRON_BLOCK,
+      Item.WALKWAY,
+      Item.CARGO_HATCH_PACKAGED
+    ])
+      .axis(TraversalAxis.VERTICAL)
+      .axis(TraversalAxis.HORIZONTAL, Item.WALKWAY);
+
+    expect(order.toStages()).toEqual([
+      {
+        items: [Item.IRON_BLOCK],
+        direction: TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT,
+        axis: TraversalAxis.VERTICAL
+      },
+      {
+        items: [Item.WALKWAY],
+        direction: TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT,
+        axis: TraversalAxis.HORIZONTAL
+      },
+      {
+        items: [Item.CARGO_HATCH_PACKAGED],
+        direction: TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT,
+        axis: TraversalAxis.VERTICAL
       }
     ]);
   });

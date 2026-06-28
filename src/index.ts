@@ -12,6 +12,7 @@ export {
   type BuildOrderStage,
   type FlatBuildOrderOptions,
   type SequentialBuildOrderOptions,
+  type StageAxes,
   type StageDirections,
   type StageItems
 } from "./build-order";

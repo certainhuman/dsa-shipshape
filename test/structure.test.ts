@@ -3,7 +3,10 @@ import {
   BuildOrder,
   Item,
   FilterType,
-  Structure
+  Structure,
+  TraversalAxis,
+  TraversalDirection,
+  type BuildCommand
 } from "../src";
 
 describe("Structure", () => {
@@ -45,7 +48,9 @@ describe("Structure", () => {
     const order = BuildOrder.GAME_DEFAULT.strict();
     const hatchCommands = structure
       .toBlueprint(order)
-      .commands.filter((command) => command.type === "build" && command.item === Item.CARGO_HATCH_PACKAGED);
+      .commands.filter((command): command is BuildCommand =>
+        command.type === "build" && command.item === Item.CARGO_HATCH_PACKAGED
+      );
 
     expect(hatchCommands).toHaveLength(2);
     expect(hatchCommands[0]).toMatchObject({
@@ -72,5 +77,147 @@ describe("Structure", () => {
       y: 9,
       bits: 0b101010101n
     });
+  });
+
+  it("can traverse builds vertically by column", () => {
+    const structure = new Structure(10, 10);
+    structure.place(Item.CARGO_HATCH_PACKAGED, 2, 1);
+    structure.place(Item.CARGO_HATCH_PACKAGED, 1, 2);
+    structure.place(Item.CARGO_HATCH_PACKAGED, 2, 3);
+
+    const order = new BuildOrder.Flat([Item.CARGO_HATCH_PACKAGED])
+      .direction(TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT)
+      .axis(TraversalAxis.VERTICAL)
+      .strict();
+    const hatchCommands = structure
+      .toBlueprint(order)
+      .commands.filter((command): command is BuildCommand =>
+        command.type === "build" && command.item === Item.CARGO_HATCH_PACKAGED
+      );
+
+    expect(hatchCommands.map((command) => [command.x, command.y])).toEqual([
+      [1, 2],
+      [2, 3],
+      [2, 1]
+    ]);
+  });
+
+  it("does not defer vertical traversal into row chains", () => {
+    const structure = new Structure(10, 10);
+    for (const x of [1, 2, 3]) {
+      for (const y of [1, 2, 3]) {
+        structure.place(Item.IRON_BLOCK, x, y);
+      }
+    }
+
+    const order = new BuildOrder.Flat([Item.IRON_BLOCK])
+      .direction(TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT)
+      .axis(TraversalAxis.VERTICAL);
+    const ironCommands = structure
+      .toBlueprint(order)
+      .commands.filter((command): command is BuildCommand =>
+        command.type === "build" && command.item === Item.IRON_BLOCK
+      );
+
+    expect(ironCommands.map((command) => [command.x, command.y])).toEqual([
+      [1, 3],
+      [1, 2],
+      [1, 1],
+      [2, 3],
+      [2, 2],
+      [2, 1],
+      [3, 3],
+      [3, 2],
+      [3, 1]
+    ]);
+    expect(ironCommands.map((command) => command.bits)).toEqual([
+      1n,
+      1n,
+      1n,
+      1n,
+      1n,
+      1n,
+      1n,
+      1n,
+      1n
+    ]);
+  });
+
+  it("chains vertical traversal row builds only when chain order matches traversal order", () => {
+    const structure = new Structure(10, 10);
+    structure.place(Item.IRON_BLOCK, 1, 2);
+    structure.place(Item.IRON_BLOCK, 2, 2);
+    structure.place(Item.IRON_BLOCK, 3, 2);
+
+    const leftToRight = new BuildOrder.Flat([Item.IRON_BLOCK])
+      .direction(TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT)
+      .axis(TraversalAxis.VERTICAL);
+    const leftToRightCommands = structure
+      .toBlueprint(leftToRight)
+      .commands.filter((command): command is BuildCommand =>
+        command.type === "build" && command.item === Item.IRON_BLOCK
+      );
+
+    expect(leftToRightCommands).toEqual([
+      {
+        type: "build",
+        x: 1,
+        y: 2,
+        item: Item.IRON_BLOCK,
+        bits: 0b111n,
+        shape: 0
+      }
+    ]);
+
+    const rightToLeft = new BuildOrder.Flat([Item.IRON_BLOCK])
+      .direction(TraversalDirection.TOP_RIGHT_TO_BOTTOM_LEFT)
+      .axis(TraversalAxis.VERTICAL);
+    const rightToLeftCommands = structure
+      .toBlueprint(rightToLeft)
+      .commands.filter((command): command is BuildCommand =>
+        command.type === "build" && command.item === Item.IRON_BLOCK
+      );
+
+    expect(rightToLeftCommands.map((command) => [command.x, command.y, command.bits])).toEqual([
+      [3, 2, 1n],
+      [2, 2, 1n],
+      [1, 2, 1n]
+    ]);
+  });
+
+  it("traverses mixed-item staged builds across rows, columns, and stages", () => {
+    const structure = new Structure(10, 10);
+    structure.place(Item.LOADER_PACKAGED, 4, 5);
+    structure.place(Item.IRON_BLOCK, 2, 2);
+    structure.place(Item.WALKWAY, 3, 3);
+    structure.place(Item.LOADER_PACKAGED, 1, 5);
+    structure.place(Item.WALKWAY, 1, 1);
+    structure.place(Item.IRON_BLOCK, 2, 3);
+    structure.place(Item.LOADER_PACKAGED, 2, 5);
+
+    const order = new BuildOrder.Staged({
+      stages: {
+        1: [Item.IRON_BLOCK, Item.WALKWAY],
+        2: [Item.LOADER_PACKAGED]
+      },
+      stageDirections: {
+        1: TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT,
+        2: TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT
+      },
+      stageAxes: {
+        1: TraversalAxis.VERTICAL
+      }
+    }).strict();
+    const buildCommands = structure
+      .toBlueprint(order)
+      .commands.filter((command): command is BuildCommand => command.type === "build");
+
+    expect(buildCommands.map((command) => [command.item, command.x, command.y, command.bits])).toEqual([
+      [Item.WALKWAY, 1, 1, 1n],
+      [Item.IRON_BLOCK, 2, 3, 1n],
+      [Item.IRON_BLOCK, 2, 2, 1n],
+      [Item.WALKWAY, 3, 3, 1n],
+      [Item.LOADER_PACKAGED, 1, 5, 0b1011n]
+    ]);
   });
 });

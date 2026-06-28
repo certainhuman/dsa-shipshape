@@ -251,6 +251,7 @@ const configs = [
 import {
   BuildOrder,
   Item,
+  TraversalAxis,
   TraversalDirection
 } from "dsa-shipshape";
 
@@ -289,6 +290,8 @@ const order = new BuildOrder.Staged({
 
 Stage indexes are numeric ordering keys. They do not need to be contiguous or positive; stages are encoded in ascending numeric order.
 
+Traversal axis controls the major coordinate sort axis within a stage. `TraversalAxis.HORIZONTAL` is row-major and matches the default encoder behavior. `TraversalAxis.VERTICAL` is column-major. Build commands still use horizontal blueprint bitmasks.
+
 Customization methods:
 
 - `order.with(stage, ...itemIds)`: returns a copy with item IDs moved to the target stage, or added when not already staged.
@@ -297,7 +300,15 @@ Customization methods:
 - `order.without(...itemIds)`: returns a copy with item IDs removed from all stages.
 - `order.direction(direction)`: returns a copy with a traversal direction assigned to all stages.
 - `order.direction(stage, direction)`: returns a copy with a traversal direction assigned to one stage.
+- `order.axis(axis)`: returns a copy with a traversal axis assigned to all stages.
+- `order.axis(stage, axis)`: returns a copy with a traversal axis assigned to one stage.
 - `order.strict(value?)`: returns a copy with strict traversal following enabled or disabled. `value` defaults to `true`.
+
+```ts
+const order = BuildOrder.GAME_DEFAULT
+  .axis(TraversalAxis.VERTICAL)
+  .axis(4, TraversalAxis.HORIZONTAL);
+```
 
 ### BuildOrder.Flat
 
@@ -316,7 +327,15 @@ Customization methods:
 - `order.with(...itemIds)`: returns a copy with item IDs added.
 - `order.without(...itemIds)`: returns a copy with item IDs removed.
 - `order.direction(direction)`: returns a copy with the traversal direction.
+- `order.axis(axis)`: returns a copy with the traversal axis.
 - `order.strict(value?)`: returns a copy with strict traversal following enabled or disabled. `value` defaults to `true`.
+
+```ts
+const order = new BuildOrder.Flat([
+  Item.IRON_BLOCK,
+  Item.WALKWAY
+]).axis(TraversalAxis.VERTICAL);
+```
 
 ### BuildOrder.Sequential
 
@@ -339,7 +358,17 @@ Customization methods:
 - `order.before(anchorItemId, ...itemIds)`: returns a copy with item IDs inserted before an existing item, or appended if the anchor is not present.
 - `order.after(anchorItemId, ...itemIds)`: returns a copy with item IDs inserted after an existing item, or appended if the anchor is not present.
 - `order.direction(direction, ...itemIds)`: returns a copy with a traversal direction assigned globally, or to specific items when item IDs are provided.
+- `order.axis(axis, ...itemIds)`: returns a copy with a traversal axis assigned globally, or to specific items when item IDs are provided.
 - `order.strict(value?)`: returns a copy with strict traversal following enabled or disabled. `value` defaults to `true`.
+
+```ts
+const order = new BuildOrder.Sequential([
+  Item.IRON_BLOCK,
+  Item.WALKWAY
+])
+  .axis(TraversalAxis.VERTICAL)
+  .axis(TraversalAxis.HORIZONTAL, Item.WALKWAY);
+```
 
 Build-chain traversal options:
 

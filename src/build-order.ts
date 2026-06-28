@@ -6,10 +6,12 @@ import {
 
 export type StageItems = Record<number, readonly number[]>;
 export type StageDirections = Partial<Record<number, TraversalDirection>>;
+export type StageAxes = Partial<Record<number, TraversalAxis>>;
 
 export interface BuildOrderOptions {
   stages?: StageItems;
   stageDirections?: StageDirections;
+  stageAxes?: StageAxes;
   traversalAxis?: TraversalAxis;
   preserveSourceOrder?: boolean;
   followTraversalStrictly?: boolean;
@@ -18,6 +20,7 @@ export interface BuildOrderOptions {
 export interface BuildOrderStage {
   readonly items: readonly number[];
   readonly direction: TraversalDirection;
+  readonly axis?: TraversalAxis;
 }
 
 export interface BuildOrder {
@@ -29,6 +32,7 @@ export interface BuildOrder {
 
 export interface FlatBuildOrderOptions {
   direction?: TraversalDirection;
+  axis?: TraversalAxis;
   preserveSourceOrder?: boolean;
   followTraversalStrictly?: boolean;
 }
@@ -36,6 +40,8 @@ export interface FlatBuildOrderOptions {
 export interface SequentialBuildOrderOptions {
   direction?: TraversalDirection;
   stageDirections?: StageDirections;
+  axis?: TraversalAxis;
+  stageAxes?: StageAxes;
   preserveSourceOrder?: boolean;
   followTraversalStrictly?: boolean;
 }
@@ -99,6 +105,7 @@ export class StagedBuildOrder implements BuildOrder {
 
   public readonly stages: StageItems;
   public readonly stageDirections: StageDirections;
+  public readonly stageAxes: StageAxes;
   public readonly traversalAxis: TraversalAxis;
   public readonly preserveSourceOrder: boolean;
   public readonly followTraversalStrictly: boolean;
@@ -107,6 +114,9 @@ export class StagedBuildOrder implements BuildOrder {
     this.stages = cloneStages(options.stages ?? {});
     this.stageDirections = {
       ...(options.stageDirections ?? {})
+    };
+    this.stageAxes = {
+      ...(options.stageAxes ?? {})
     };
     this.traversalAxis = options.traversalAxis ?? TraversalAxis.HORIZONTAL;
     this.preserveSourceOrder = options.preserveSourceOrder ?? false;
@@ -223,6 +233,25 @@ export class StagedBuildOrder implements BuildOrder {
   }
 
   /**
+   * Returns a copy with a traversal axis assigned globally or to a stage.
+   */
+  axis(axis: TraversalAxis): StagedBuildOrder;
+  axis(stage: number, axis: TraversalAxis): StagedBuildOrder;
+  axis(stageOrAxis: number | TraversalAxis, axis?: TraversalAxis): StagedBuildOrder {
+    if (axis === undefined) {
+      return new StagedBuildOrder({
+        ...this.toOptions(),
+        traversalAxis: stageOrAxis as TraversalAxis
+      });
+    }
+
+    return new StagedBuildOrder({
+      ...this.toOptions(),
+      stageAxes: { ...this.stageAxes, [stageOrAxis as number]: axis }
+    });
+  }
+
+  /**
    * Returns a copy with strict traversal following enabled or disabled.
    */
   strict(value = true): StagedBuildOrder {
@@ -257,6 +286,13 @@ export class StagedBuildOrder implements BuildOrder {
   }
 
   /**
+   * Gets the traversal axis for a stage.
+   */
+  axisOf(stage: number): TraversalAxis {
+    return this.stageAxes[stage] ?? this.traversalAxis;
+  }
+
+  /**
    * Gets the highest numeric stage key, or `0` when there are no stages.
    */
   numStages(): number {
@@ -267,7 +303,8 @@ export class StagedBuildOrder implements BuildOrder {
   toStages(): readonly BuildOrderStage[] {
     return stageNumbers(this.stages).map((stage) => ({
       items: this.items(stage),
-      direction: this.directionOf(stage)
+      direction: this.directionOf(stage),
+      axis: this.axisOf(stage)
     }));
   }
 
@@ -275,6 +312,7 @@ export class StagedBuildOrder implements BuildOrder {
     const options: BuildOrderOptions = {
       stages: this.stages,
       stageDirections: this.stageDirections,
+      stageAxes: this.stageAxes,
       traversalAxis: this.traversalAxis,
       preserveSourceOrder: this.preserveSourceOrder,
       followTraversalStrictly: this.followTraversalStrictly
@@ -292,12 +330,14 @@ export class FlatBuildOrder implements BuildOrder {
 
   public readonly itemIds: readonly number[];
   public readonly traversalDirection: TraversalDirection;
+  public readonly traversalAxis: TraversalAxis;
   public readonly preserveSourceOrder: boolean;
   public readonly followTraversalStrictly: boolean;
 
   constructor(itemIds: readonly number[] = [], options: FlatBuildOrderOptions = {}) {
     this.itemIds = unique(itemIds);
     this.traversalDirection = options.direction ?? TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT;
+    this.traversalAxis = options.axis ?? TraversalAxis.HORIZONTAL;
     this.preserveSourceOrder = options.preserveSourceOrder ?? false;
     this.followTraversalStrictly = options.followTraversalStrictly ?? false;
   }
@@ -328,6 +368,13 @@ export class FlatBuildOrder implements BuildOrder {
   }
 
   /**
+   * Returns a copy with a traversal axis assigned to the single stage.
+   */
+  axis(axis: TraversalAxis): FlatBuildOrder {
+    return new FlatBuildOrder(this.itemIds, { ...this.toOptions(), axis });
+  }
+
+  /**
    * Returns a copy with strict traversal following enabled or disabled.
    */
   strict(value = true): FlatBuildOrder {
@@ -341,13 +388,15 @@ export class FlatBuildOrder implements BuildOrder {
     if (this.itemIds.length === 0) return [];
     return [{
       items: this.itemIds,
-      direction: this.traversalDirection
+      direction: this.traversalDirection,
+      axis: this.traversalAxis
     }];
   }
 
   private toOptions(): FlatBuildOrderOptions {
     const options: FlatBuildOrderOptions = {
       direction: this.traversalDirection,
+      axis: this.traversalAxis,
       preserveSourceOrder: this.preserveSourceOrder,
       followTraversalStrictly: this.followTraversalStrictly
     };
@@ -364,7 +413,9 @@ export class SequentialBuildOrder implements BuildOrder {
 
   public readonly itemIds: readonly number[];
   public readonly stageDirections: StageDirections;
+  public readonly stageAxes: StageAxes;
   public readonly traversalDirection: TraversalDirection;
+  public readonly traversalAxis: TraversalAxis;
   public readonly preserveSourceOrder: boolean;
   public readonly followTraversalStrictly: boolean;
 
@@ -374,7 +425,9 @@ export class SequentialBuildOrder implements BuildOrder {
   ) {
     this.itemIds = unique(itemIds);
     this.stageDirections = { ...(options.stageDirections ?? {}) };
+    this.stageAxes = { ...(options.stageAxes ?? {}) };
     this.traversalDirection = options.direction ?? TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT;
+    this.traversalAxis = options.axis ?? TraversalAxis.HORIZONTAL;
     this.preserveSourceOrder = options.preserveSourceOrder ?? false;
     this.followTraversalStrictly = options.followTraversalStrictly ?? false;
   }
@@ -401,7 +454,8 @@ export class SequentialBuildOrder implements BuildOrder {
     const sequence = this.itemIds.filter((itemId) => !remove.has(itemId));
     return new SequentialBuildOrder(sequence, {
       ...this.toOptions(),
-      stageDirections: remapStageDirections(this.stageDirections, this.itemIds, sequence)
+      stageDirections: remapStageValues(this.stageDirections, this.itemIds, sequence),
+      stageAxes: remapStageValues(this.stageAxes, this.itemIds, sequence)
     });
   }
 
@@ -421,7 +475,8 @@ export class SequentialBuildOrder implements BuildOrder {
 
     return new SequentialBuildOrder(nextSequence, {
       ...this.toOptions(),
-      stageDirections: remapStageDirections(this.stageDirections, this.itemIds, nextSequence)
+      stageDirections: remapStageValues(this.stageDirections, this.itemIds, nextSequence),
+      stageAxes: remapStageValues(this.stageAxes, this.itemIds, nextSequence)
     });
   }
 
@@ -465,6 +520,29 @@ export class SequentialBuildOrder implements BuildOrder {
   }
 
   /**
+   * Returns a copy with a traversal axis assigned globally or to one or more items.
+   */
+  axis(axis: TraversalAxis, ...itemIds: number[]): SequentialBuildOrder {
+    if (itemIds.length === 0) {
+      return new SequentialBuildOrder(this.itemIds, {
+        ...this.toOptions(),
+        axis
+      });
+    }
+
+    const stageAxes = { ...this.stageAxes };
+    for (const itemId of itemIds) {
+      const index = this.itemIds.indexOf(itemId);
+      if (index !== -1) stageAxes[index + 1] = axis;
+    }
+
+    return new SequentialBuildOrder(this.itemIds, {
+      ...this.toOptions(),
+      stageAxes
+    });
+  }
+
+  /**
    * Returns a copy with strict traversal following enabled or disabled.
    */
   strict(value = true): SequentialBuildOrder {
@@ -477,7 +555,8 @@ export class SequentialBuildOrder implements BuildOrder {
   toStages(): readonly BuildOrderStage[] {
     return this.itemIds.map((itemId, index) => ({
       items: [itemId],
-      direction: this.stageDirections[index + 1] ?? this.traversalDirection
+      direction: this.stageDirections[index + 1] ?? this.traversalDirection,
+      axis: this.stageAxes[index + 1] ?? this.traversalAxis
     }));
   }
 
@@ -485,6 +564,8 @@ export class SequentialBuildOrder implements BuildOrder {
     const options: SequentialBuildOrderOptions = {
       direction: this.traversalDirection,
       stageDirections: this.stageDirections,
+      axis: this.traversalAxis,
+      stageAxes: this.stageAxes,
       preserveSourceOrder: this.preserveSourceOrder,
       followTraversalStrictly: this.followTraversalStrictly
     };
@@ -544,18 +625,18 @@ function unique(itemIds: readonly number[]): readonly number[] {
   return [...new Set(itemIds)];
 }
 
-function remapStageDirections(
-  stageDirections: StageDirections,
+function remapStageValues<T>(
+  stageValues: Partial<Record<number, T>>,
   itemIds: readonly number[],
   nextItemIds: readonly number[]
-): StageDirections {
-  const nextDirections: StageDirections = {};
+): Partial<Record<number, T>> {
+  const nextValues: Partial<Record<number, T>> = {};
 
   for (const [index, itemId] of nextItemIds.entries()) {
     const oldStage = itemIds.indexOf(itemId) + 1;
-    const direction = stageDirections[oldStage];
-    if (direction !== undefined) nextDirections[index + 1] = direction;
+    const value = stageValues[oldStage];
+    if (value !== undefined) nextValues[index + 1] = value;
   }
 
-  return nextDirections;
+  return nextValues;
 }
