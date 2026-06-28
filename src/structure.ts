@@ -1,10 +1,11 @@
 import {
   DEFAULT_BUILD_ORDER,
-  type BuildOrder
+  type BuildOrder,
+  type BuildOrderStage
 } from "./build-order";
 import { configKey, configsEqual } from "./configs";
 import { getBuildPositions } from "./commands";
-import { BuildChainMode, TraversalDirection } from "./enums";
+import { TraversalDirection } from "./enums";
 import { ShipShapeError } from "./errors";
 import type { Blueprint, BlueprintCommand, BuildCommand, ConfigData } from "./types";
 
@@ -161,31 +162,33 @@ export class Structure {
    */
   toBlueprint(buildOrder: BuildOrder = DEFAULT_BUILD_ORDER): Blueprint {
     const commands: BlueprintCommand[] = [];
+    const stages = buildOrder.toStages();
+    const directionByItem = getBuildOrderDirections(stages);
 
-    for (let stage = 1; stage <= buildOrder.numStages(); stage++) {
-      const stageBuilds = this.getBuildsForStage(stage, buildOrder);
+    for (const stage of stages) {
+      const stageBuilds = this.getBuildsForStage(stage);
       if (stageBuilds.length === 0) continue;
 
-      const sortedStageBuilds = sortByTraversal(stageBuilds, buildOrder.directionOf(stage));
+      const sortedStageBuilds = sortByTraversal(stageBuilds, stage.direction);
       if (
-        buildOrder.buildChainMode === BuildChainMode.ALLOW_DEFERRAL &&
+        !buildOrder.followTraversalStrictly &&
         buildOrder.preserveSourceOrder
       ) {
         for (const configRun of getConfigRuns(stageBuilds)) {
           addConfiguration(commands, configRun.configs);
-          this.processBuildsInGroup(configRun.builds, buildOrder, commands);
+          this.processBuildsInGroup(configRun.builds, buildOrder, directionByItem, commands);
         }
         continue;
       }
 
       const configGroupSource =
-        buildOrder.buildChainMode === BuildChainMode.ALLOW_DEFERRAL
+        !buildOrder.followTraversalStrictly
           ? stageBuilds
           : sortedStageBuilds;
 
       for (const configGroup of getConfigGroups(configGroupSource)) {
         addConfiguration(commands, configGroup.configs);
-        this.processBuildsInGroup(configGroup.builds, buildOrder, commands);
+        this.processBuildsInGroup(configGroup.builds, buildOrder, directionByItem, commands);
       }
     }
 
@@ -195,32 +198,23 @@ export class Structure {
   private processBuildsInGroup(
     builds: StructureBuild[],
     buildOrder: BuildOrder,
+    directionByItem: ReadonlyMap<number, TraversalDirection>,
     commands: BlueprintCommand[]
   ): void {
-    switch (buildOrder.buildChainMode) {
-      case BuildChainMode.STRICT_TRAVERSAL:
-        for (const chain of createStrictChains(builds)) addBuildCommand(commands, chain);
-        break;
-      case BuildChainMode.ALLOW_DEFERRAL: {
-        const first = builds[0];
-        if (!first) return;
-        const stage = buildOrder.stageOf(first.item);
-        const sortedBuilds = sortByTraversal(builds, buildOrder.directionOf(stage));
-        for (const chain of createDeferralChains(sortedBuilds)) addBuildCommand(commands, chain);
-        break;
-      }
-      case BuildChainMode.GROUP_BY_ITEM:
-        for (const itemGroup of getItemGroups(builds)) {
-          const stage = buildOrder.stageOf(itemGroup.group.item);
-          const sortedBuilds = sortByTraversal(itemGroup.builds, buildOrder.directionOf(stage));
-          for (const chain of createStrictChains(sortedBuilds)) addBuildCommand(commands, chain);
-        }
-        break;
+    if (buildOrder.followTraversalStrictly) {
+      for (const chain of createStrictChains(builds)) addBuildCommand(commands, chain);
+      return;
     }
+
+    const first = builds[0];
+    if (!first) return;
+    const direction = directionByItem.get(first.item) ?? TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT;
+    const sortedBuilds = sortByTraversal(builds, direction);
+    for (const chain of createDeferralChains(sortedBuilds)) addBuildCommand(commands, chain);
   }
 
-  private getBuildsForStage(stage: number, buildOrder: BuildOrder): StructureBuild[] {
-    const stageItems = new Set(buildOrder.items(stage));
+  private getBuildsForStage(stage: BuildOrderStage): StructureBuild[] {
+    const stageItems = new Set(stage.items);
     if (stageItems.size === 0) return [];
     return this.builds.filter((build) => stageItems.has(build.item));
   }
@@ -298,17 +292,6 @@ function getConfigRuns(builds: StructureBuild[]): ConfigRun[] {
   }
 
   return runs;
-}
-
-function getItemGroups(builds: StructureBuild[]): Array<{ group: BuildGroup; builds: StructureBuild[] }> {
-  const groups = new Map<string, { group: BuildGroup; builds: StructureBuild[] }>();
-  for (const build of builds) {
-    const key = `${build.item}:${build.shape}`;
-    const existing = groups.get(key);
-    if (existing) existing.builds.push(build);
-    else groups.set(key, { group: { item: build.item, shape: build.shape }, builds: [build] });
-  }
-  return [...groups.values()];
 }
 
 function createStrictChains(builds: StructureBuild[]): GroupedBuildChain[] {
@@ -393,6 +376,16 @@ function createChain(builds: StructureBuild[]): BuildChain {
     bits |= 1n << BigInt(Math.round(build.x - baseX));
   }
   return { baseX, y: first.y, bits };
+}
+
+function getBuildOrderDirections(stages: readonly BuildOrderStage[]): ReadonlyMap<number, TraversalDirection> {
+  const directions = new Map<number, TraversalDirection>();
+  for (const stage of stages) {
+    for (const itemId of stage.items) {
+      if (!directions.has(itemId)) directions.set(itemId, stage.direction);
+    }
+  }
+  return directions;
 }
 
 function sortByTraversal(builds: StructureBuild[], direction: TraversalDirection): StructureBuild[] {

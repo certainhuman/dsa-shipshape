@@ -1,6 +1,5 @@
 import { Item } from "./constants";
 import {
-  BuildChainMode,
   TraversalAxis,
   TraversalDirection
 } from "./enums";
@@ -12,9 +11,33 @@ export interface BuildOrderOptions {
   stages?: StageItems;
   stageDirections?: StageDirections;
   traversalAxis?: TraversalAxis;
-  buildChainMode?: BuildChainMode;
   preserveSourceOrder?: boolean;
-  respectTraversalOrderForBuildChains?: boolean;
+  followTraversalStrictly?: boolean;
+}
+
+export interface BuildOrderStage {
+  readonly items: readonly number[];
+  readonly direction: TraversalDirection;
+}
+
+export interface BuildOrder {
+  readonly preserveSourceOrder: boolean;
+  readonly followTraversalStrictly: boolean;
+
+  toStages(): readonly BuildOrderStage[];
+}
+
+export interface FlatBuildOrderOptions {
+  direction?: TraversalDirection;
+  preserveSourceOrder?: boolean;
+  followTraversalStrictly?: boolean;
+}
+
+export interface SequentialBuildOrderOptions {
+  direction?: TraversalDirection;
+  stageDirections?: StageDirections;
+  preserveSourceOrder?: boolean;
+  followTraversalStrictly?: boolean;
 }
 
 export const DEFAULT_STAGE_ITEMS: StageItems = {
@@ -66,39 +89,34 @@ export const DEFAULT_STAGE_DIRECTIONS: StageDirections = {
 };
 
 /**
- * Build staging and traversal rules used by `Structure.toBlueprint()`.
+ * Multi-stage build order with independent item sets and traversal directions per stage.
  */
-export class BuildOrder {
+export class StagedBuildOrder implements BuildOrder {
+  static readonly DEFAULT = new StagedBuildOrder({
+    stages: DEFAULT_STAGE_ITEMS,
+    stageDirections: DEFAULT_STAGE_DIRECTIONS
+  });
+
   public readonly stages: StageItems;
   public readonly stageDirections: StageDirections;
   public readonly traversalAxis: TraversalAxis;
-  public readonly buildChainMode: BuildChainMode;
   public readonly preserveSourceOrder: boolean;
-  public readonly respectTraversalOrderForBuildChains?: boolean;
+  public readonly followTraversalStrictly: boolean;
 
   constructor(options: BuildOrderOptions = {}) {
-    this.stages = cloneStages(options.stages ?? DEFAULT_STAGE_ITEMS);
+    this.stages = cloneStages(options.stages ?? {});
     this.stageDirections = {
-      ...DEFAULT_STAGE_DIRECTIONS,
       ...(options.stageDirections ?? {})
     };
     this.traversalAxis = options.traversalAxis ?? TraversalAxis.HORIZONTAL;
-    this.buildChainMode = resolveBuildChainMode(options);
     this.preserveSourceOrder = options.preserveSourceOrder ?? false;
-
-    if (options.respectTraversalOrderForBuildChains !== undefined) {
-      this.respectTraversalOrderForBuildChains = options.respectTraversalOrderForBuildChains;
-    }
-  }
-
-  static create(options: BuildOrderOptions = {}): BuildOrder {
-    return new BuildOrder(options);
+    this.followTraversalStrictly = options.followTraversalStrictly ?? false;
   }
 
   /**
    * Returns a copy with the given item IDs removed from every stage.
    */
-  without(...itemIds: number[]): BuildOrder {
+  without(...itemIds: number[]): StagedBuildOrder {
     const remove = new Set(itemIds);
     const stages: StageItems = Object.fromEntries(
       Object.entries(this.stages).map(([stage, items]) => [
@@ -106,31 +124,111 @@ export class BuildOrder {
         items.filter((itemId) => !remove.has(itemId))
       ])
     );
-    return new BuildOrder({ ...this.toOptions(), stages });
+    return new StagedBuildOrder({ ...this.toOptions(), stages });
   }
 
   /**
-   * Returns a copy with item IDs appended to a stage.
+   * Returns a copy with item IDs moved to the end of a stage, or added when not already staged.
    */
-  with(stage: number, ...itemIds: number[]): BuildOrder {
-    const stages = cloneStages(this.stages);
-    stages[stage] = [...(stages[stage] ?? []), ...itemIds];
+  with(stage: number, ...itemIds: number[]): StagedBuildOrder {
+    const move = new Set(itemIds);
+    const stages: StageItems = Object.fromEntries(
+      Object.entries(this.stages).map(([stageKey, items]) => [
+        stageKey,
+        items.filter((itemId) => !move.has(itemId))
+      ])
+    );
+    stages[stage] = unique([...(stages[stage] ?? []), ...itemIds]);
 
     const stageDirections = { ...this.stageDirections };
     if (!stageDirections[stage]) {
       stageDirections[stage] = TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT;
     }
 
-    return new BuildOrder({ ...this.toOptions(), stages, stageDirections });
+    return new StagedBuildOrder({ ...this.toOptions(), stages, stageDirections });
   }
 
   /**
-   * Returns a copy with a traversal direction assigned to a stage.
+   * Returns a copy with item IDs moved to a first stage, or added when not already staged.
    */
-  direction(stage: number, direction: TraversalDirection): BuildOrder {
-    return new BuildOrder({
+  first(...itemIds: number[]): StagedBuildOrder {
+    if (itemIds.length === 0) return this;
+
+    const stages = removeFromStages(this.stages, itemIds);
+    const minStage = lowestStage(stages);
+    const stage = minStage === undefined
+      ? 1
+      : (stages[minStage] ?? []).length === 0
+        ? minStage
+        : minStage - 1;
+    const stageDirections = { ...this.stageDirections };
+    if (!stageDirections[stage]) {
+      stageDirections[stage] = TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT;
+    }
+
+    return new StagedBuildOrder({
       ...this.toOptions(),
-      stageDirections: { ...this.stageDirections, [stage]: direction }
+      stages: { ...stages, [stage]: unique([...(stages[stage] ?? []), ...itemIds]) },
+      stageDirections
+    });
+  }
+
+  /**
+   * Returns a copy with item IDs moved to a last stage, or added when not already staged.
+   */
+  last(...itemIds: number[]): StagedBuildOrder {
+    if (itemIds.length === 0) return this;
+
+    const stages = removeFromStages(this.stages, itemIds);
+    const maxStage = highestStage(stages);
+    const stage = maxStage === undefined
+      ? 1
+      : (stages[maxStage] ?? []).length === 0
+        ? maxStage
+        : maxStage + 1;
+    const stageDirections = { ...this.stageDirections };
+    if (!stageDirections[stage]) {
+      stageDirections[stage] = TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT;
+    }
+
+    return new StagedBuildOrder({
+      ...this.toOptions(),
+      stages: { ...stages, [stage]: unique([...(stages[stage] ?? []), ...itemIds]) },
+      stageDirections
+    });
+  }
+
+  /**
+   * Returns a copy with a traversal direction assigned globally or to a stage.
+   */
+  direction(direction: TraversalDirection): StagedBuildOrder;
+  direction(stage: number, direction: TraversalDirection): StagedBuildOrder;
+  direction(stageOrDirection: number | TraversalDirection, direction?: TraversalDirection): StagedBuildOrder {
+    if (direction === undefined) {
+      const stageDirections: StageDirections = {};
+      for (const stage of stageNumbers(this.stages)) {
+        stageDirections[stage] = stageOrDirection as TraversalDirection;
+      }
+
+      return new StagedBuildOrder({
+        ...this.toOptions(),
+        stageDirections
+      });
+    }
+
+    return new StagedBuildOrder({
+      ...this.toOptions(),
+      stageDirections: { ...this.stageDirections, [stageOrDirection as number]: direction }
+    });
+  }
+
+  /**
+   * Returns a copy with strict traversal following enabled or disabled.
+   */
+  strict(value = true): StagedBuildOrder {
+    return new StagedBuildOrder({
+      ...this.toOptions(),
+      followTraversalStrictly: value
     });
   }
 
@@ -159,11 +257,18 @@ export class BuildOrder {
   }
 
   /**
-   * Gets the highest stage number in the build order.
+   * Gets the highest numeric stage key, or `0` when there are no stages.
    */
   numStages(): number {
     const stages = Object.keys(this.stages).map(Number);
     return stages.length === 0 ? 0 : Math.max(...stages);
+  }
+
+  toStages(): readonly BuildOrderStage[] {
+    return stageNumbers(this.stages).map((stage) => ({
+      items: this.items(stage),
+      direction: this.directionOf(stage)
+    }));
   }
 
   private toOptions(): BuildOrderOptions {
@@ -171,31 +276,286 @@ export class BuildOrder {
       stages: this.stages,
       stageDirections: this.stageDirections,
       traversalAxis: this.traversalAxis,
-      buildChainMode: this.buildChainMode,
-      preserveSourceOrder: this.preserveSourceOrder
+      preserveSourceOrder: this.preserveSourceOrder,
+      followTraversalStrictly: this.followTraversalStrictly
     };
-
-    if (this.respectTraversalOrderForBuildChains !== undefined) {
-      options.respectTraversalOrderForBuildChains = this.respectTraversalOrderForBuildChains;
-    }
 
     return options;
   }
 }
 
-export const DEFAULT_BUILD_ORDER = new BuildOrder();
+/**
+ * Single-stage build order where all configured items are built together.
+ */
+export class FlatBuildOrder implements BuildOrder {
+  static readonly DEFAULT = new FlatBuildOrder(defaultBuildItems());
 
-function resolveBuildChainMode(options: BuildOrderOptions): BuildChainMode {
-  if (options.respectTraversalOrderForBuildChains !== undefined) {
-    return options.respectTraversalOrderForBuildChains
-      ? BuildChainMode.STRICT_TRAVERSAL
-      : BuildChainMode.ALLOW_DEFERRAL;
+  public readonly itemIds: readonly number[];
+  public readonly traversalDirection: TraversalDirection;
+  public readonly preserveSourceOrder: boolean;
+  public readonly followTraversalStrictly: boolean;
+
+  constructor(itemIds: readonly number[] = [], options: FlatBuildOrderOptions = {}) {
+    this.itemIds = unique(itemIds);
+    this.traversalDirection = options.direction ?? TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT;
+    this.preserveSourceOrder = options.preserveSourceOrder ?? false;
+    this.followTraversalStrictly = options.followTraversalStrictly ?? false;
   }
-  return options.buildChainMode ?? BuildChainMode.ALLOW_DEFERRAL;
+
+  /**
+   * Returns a copy with item IDs appended to the single stage.
+   */
+  with(...itemIds: number[]): FlatBuildOrder {
+    return new FlatBuildOrder([...this.itemIds, ...itemIds], this.toOptions());
+  }
+
+  /**
+   * Returns a copy with the given item IDs removed from the single stage.
+   */
+  without(...itemIds: number[]): FlatBuildOrder {
+    const remove = new Set(itemIds);
+    return new FlatBuildOrder(
+      this.itemIds.filter((itemId) => !remove.has(itemId)),
+      this.toOptions()
+    );
+  }
+
+  /**
+   * Returns a copy with a traversal direction assigned to the single stage.
+   */
+  direction(direction: TraversalDirection): FlatBuildOrder {
+    return new FlatBuildOrder(this.itemIds, { ...this.toOptions(), direction });
+  }
+
+  /**
+   * Returns a copy with strict traversal following enabled or disabled.
+   */
+  strict(value = true): FlatBuildOrder {
+    return new FlatBuildOrder(this.itemIds, {
+      ...this.toOptions(),
+      followTraversalStrictly: value
+    });
+  }
+
+  toStages(): readonly BuildOrderStage[] {
+    if (this.itemIds.length === 0) return [];
+    return [{
+      items: this.itemIds,
+      direction: this.traversalDirection
+    }];
+  }
+
+  private toOptions(): FlatBuildOrderOptions {
+    const options: FlatBuildOrderOptions = {
+      direction: this.traversalDirection,
+      preserveSourceOrder: this.preserveSourceOrder,
+      followTraversalStrictly: this.followTraversalStrictly
+    };
+
+    return options;
+  }
 }
+
+/**
+ * Build order where each configured item is built in its own stage.
+ */
+export class SequentialBuildOrder implements BuildOrder {
+  static readonly DEFAULT = new SequentialBuildOrder(defaultBuildItems());
+
+  public readonly itemIds: readonly number[];
+  public readonly stageDirections: StageDirections;
+  public readonly traversalDirection: TraversalDirection;
+  public readonly preserveSourceOrder: boolean;
+  public readonly followTraversalStrictly: boolean;
+
+  constructor(
+    itemIds: readonly number[] = [],
+    options: SequentialBuildOrderOptions = {}
+  ) {
+    this.itemIds = unique(itemIds);
+    this.stageDirections = { ...(options.stageDirections ?? {}) };
+    this.traversalDirection = options.direction ?? TraversalDirection.TOP_LEFT_TO_BOTTOM_RIGHT;
+    this.preserveSourceOrder = options.preserveSourceOrder ?? false;
+    this.followTraversalStrictly = options.followTraversalStrictly ?? false;
+  }
+
+  /**
+   * Returns a copy with item IDs appended to the sequence.
+   */
+  append(...itemIds: number[]): SequentialBuildOrder {
+    return this.insert(this.itemIds.length, ...itemIds);
+  }
+
+  /**
+   * Returns a copy with item IDs prepended to the sequence.
+   */
+  prepend(...itemIds: number[]): SequentialBuildOrder {
+    return this.insert(0, ...itemIds);
+  }
+
+  /**
+   * Returns a copy with the given item IDs removed from the sequence.
+   */
+  without(...itemIds: number[]): SequentialBuildOrder {
+    const remove = new Set(itemIds);
+    const sequence = this.itemIds.filter((itemId) => !remove.has(itemId));
+    return new SequentialBuildOrder(sequence, {
+      ...this.toOptions(),
+      stageDirections: remapStageDirections(this.stageDirections, this.itemIds, sequence)
+    });
+  }
+
+  /**
+   * Returns a copy with item IDs inserted at an index in the sequence.
+   */
+  insert(index: number, ...itemIds: number[]): SequentialBuildOrder {
+    const insert = unique(itemIds);
+    const insertSet = new Set(insert);
+    const sequence = this.itemIds.filter((itemId) => !insertSet.has(itemId));
+    const boundedIndex = Math.max(0, Math.min(Math.round(index), sequence.length));
+    const nextSequence = [
+      ...sequence.slice(0, boundedIndex),
+      ...insert,
+      ...sequence.slice(boundedIndex)
+    ];
+
+    return new SequentialBuildOrder(nextSequence, {
+      ...this.toOptions(),
+      stageDirections: remapStageDirections(this.stageDirections, this.itemIds, nextSequence)
+    });
+  }
+
+  /**
+   * Returns a copy with item IDs inserted before an existing item, or appended if the anchor is not present.
+   */
+  before(anchorItemId: number, ...itemIds: number[]): SequentialBuildOrder {
+    const index = this.itemIds.filter((itemId) => !itemIds.includes(itemId)).indexOf(anchorItemId);
+    return this.insert(index === -1 ? this.itemIds.length : index, ...itemIds);
+  }
+
+  /**
+   * Returns a copy with item IDs inserted after an existing item, or appended if the anchor is not present.
+   */
+  after(anchorItemId: number, ...itemIds: number[]): SequentialBuildOrder {
+    const index = this.itemIds.filter((itemId) => !itemIds.includes(itemId)).indexOf(anchorItemId);
+    return this.insert(index === -1 ? this.itemIds.length : index + 1, ...itemIds);
+  }
+
+  /**
+   * Returns a copy with a traversal direction assigned globally or to one or more items.
+   */
+  direction(direction: TraversalDirection, ...itemIds: number[]): SequentialBuildOrder {
+    if (itemIds.length === 0) {
+      return new SequentialBuildOrder(this.itemIds, {
+        ...this.toOptions(),
+        direction
+      });
+    }
+
+    const stageDirections = { ...this.stageDirections };
+    for (const itemId of itemIds) {
+      const index = this.itemIds.indexOf(itemId);
+      if (index !== -1) stageDirections[index + 1] = direction;
+    }
+
+    return new SequentialBuildOrder(this.itemIds, {
+      ...this.toOptions(),
+      stageDirections
+    });
+  }
+
+  /**
+   * Returns a copy with strict traversal following enabled or disabled.
+   */
+  strict(value = true): SequentialBuildOrder {
+    return new SequentialBuildOrder(this.itemIds, {
+      ...this.toOptions(),
+      followTraversalStrictly: value
+    });
+  }
+
+  toStages(): readonly BuildOrderStage[] {
+    return this.itemIds.map((itemId, index) => ({
+      items: [itemId],
+      direction: this.stageDirections[index + 1] ?? this.traversalDirection
+    }));
+  }
+
+  private toOptions(): SequentialBuildOrderOptions {
+    const options: SequentialBuildOrderOptions = {
+      direction: this.traversalDirection,
+      stageDirections: this.stageDirections,
+      preserveSourceOrder: this.preserveSourceOrder,
+      followTraversalStrictly: this.followTraversalStrictly
+    };
+
+    return options;
+  }
+}
+
+export const BuildOrder = {
+  GAME_DEFAULT: StagedBuildOrder.DEFAULT,
+  Staged: StagedBuildOrder,
+  Flat: FlatBuildOrder,
+  Sequential: SequentialBuildOrder
+} as const;
+
+export const DEFAULT_BUILD_ORDER = BuildOrder.GAME_DEFAULT;
 
 function cloneStages(stages: StageItems): StageItems {
   return Object.fromEntries(
     Object.entries(stages).map(([stage, items]) => [stage, [...items]])
   );
+}
+
+function removeFromStages(stages: StageItems, itemIds: readonly number[]): StageItems {
+  const remove = new Set(itemIds);
+  return Object.fromEntries(
+    Object.entries(stages).map(([stage, items]) => [
+      stage,
+      items.filter((itemId) => !remove.has(itemId))
+    ])
+  );
+}
+
+function stageNumbers(stages: StageItems): readonly number[] {
+  return Object.keys(stages)
+    .map(Number)
+    .sort((a, b) => a - b);
+}
+
+function lowestStage(stages: StageItems): number | undefined {
+  return stageNumbers(stages)[0];
+}
+
+function highestStage(stages: StageItems): number | undefined {
+  const stagesByNumber = stageNumbers(stages);
+  return stagesByNumber[stagesByNumber.length - 1];
+}
+
+function defaultBuildItems(): readonly number[] {
+  return Object.keys(DEFAULT_STAGE_ITEMS)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .flatMap((stage) => DEFAULT_STAGE_ITEMS[stage] ?? []);
+}
+
+function unique(itemIds: readonly number[]): readonly number[] {
+  return [...new Set(itemIds)];
+}
+
+function remapStageDirections(
+  stageDirections: StageDirections,
+  itemIds: readonly number[],
+  nextItemIds: readonly number[]
+): StageDirections {
+  const nextDirections: StageDirections = {};
+
+  for (const [index, itemId] of nextItemIds.entries()) {
+    const oldStage = itemIds.indexOf(itemId) + 1;
+    const direction = stageDirections[oldStage];
+    if (direction !== undefined) nextDirections[index + 1] = direction;
+  }
+
+  return nextDirections;
 }

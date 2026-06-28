@@ -245,41 +245,106 @@ const configs = [
 
 `Structure.toBlueprint()` uses a `BuildOrder` to decide which items are emitted in which stage, how each stage is traversed, and how placements are compacted into build chains.
 
-Use `new BuildOrder()` to create a customized order:
+`BuildOrder` is both the encoder-facing interface and the namespace for build-order constructors and defaults:
 
 ```ts
 import {
   BuildOrder,
-  BuildChainMode,
   Item,
   TraversalDirection
 } from "dsa-shipshape";
 
-const order = new BuildOrder({
-  buildChainMode: BuildChainMode.STRICT_TRAVERSAL
+const order = new BuildOrder.Staged({
+  followTraversalStrictly: true
 })
   .without(Item.EXPANDO_BOX_PACKAGED)
   .with(5, Item.EXPANDO_BOX_PACKAGED)
   .direction(5, TraversalDirection.BOTTOM_LEFT_TO_TOP_RIGHT);
 ```
 
-Constructor and methods:
+Constructors and defaults:
 
-- `new BuildOrder(options?)`: creates a build order from defaults plus overrides.
-- `BuildOrder.create(options?)`: static equivalent to the constructor.
-- `order.with(stage, ...itemIds)`: returns a copy with item IDs added to a stage.
+- `BuildOrder.GAME_DEFAULT`: the staged build order that mimics the in-game encoder as closely as possible.
+- `new BuildOrder.Staged(options?)`: creates a staged build order. With no options, it is empty.
+- `BuildOrder.Staged.DEFAULT`: the default staged build order.
+- `new BuildOrder.Flat(itemIds?, options?)`: creates a flat build order. With no item IDs, it is empty.
+- `BuildOrder.Flat.DEFAULT`: the default flat build order.
+- `new BuildOrder.Sequential(itemIds?, options?)`: creates a sequential build order. With no item IDs, it is empty.
+- `BuildOrder.Sequential.DEFAULT`: the default sequential build order.
+
+The `BuildOrder` interface is the encoder-facing contract. It exposes `toStages()` plus build-chain settings so `Structure.toBlueprint()` can read a staged plan. The concrete implementations expose their own customization methods instead of sharing one broad editing API.
+
+### BuildOrder.Staged
+
+Use `BuildOrder.Staged` for multi-stage ordering with separate item sets and traversal directions per stage. This is the default build-order implementation.
+
+```ts
+const order = new BuildOrder.Staged({
+  followTraversalStrictly: true
+})
+  .without(Item.EXPANDO_BOX_PACKAGED)
+  .with(5, Item.EXPANDO_BOX_PACKAGED)
+  .direction(5, TraversalDirection.NONE);
+```
+
+Stage indexes are numeric ordering keys. They do not need to be contiguous or positive; stages are encoded in ascending numeric order.
+
+Customization methods:
+
+- `order.with(stage, ...itemIds)`: returns a copy with item IDs moved to the target stage, or added when not already staged.
+- `order.first(...itemIds)`: returns a copy with item IDs moved to a new or empty lowest-index stage, or added when not already staged. Existing stage indexes are not shifted.
+- `order.last(...itemIds)`: returns a copy with item IDs moved to a new or empty highest-index stage, or added when not already staged. Existing stage indexes are not shifted.
 - `order.without(...itemIds)`: returns a copy with item IDs removed from all stages.
-- `order.direction(stage, direction)`: returns a copy with a stage traversal direction.
-- `order.items(stage)`: reads stage item IDs.
-- `order.stageOf(itemId)`: returns the item's stage, or `-1`.
-- `order.directionOf(stage)`: reads a stage traversal direction.
-- `order.numStages()`: returns the highest stage number.
+- `order.direction(direction)`: returns a copy with a traversal direction assigned to all stages.
+- `order.direction(stage, direction)`: returns a copy with a traversal direction assigned to one stage.
+- `order.strict(value?)`: returns a copy with strict traversal following enabled or disabled. `value` defaults to `true`.
 
-`BuildChainMode` values:
+### BuildOrder.Flat
 
-- `STRICT_TRAVERSAL`: preserve traversal order strictly, even when that creates more commands.
-- `ALLOW_DEFERRAL`: allows passing over builds that are next in the build traversal direction and deferring them to the next chain to allow chaining valid builds that are past them. It still follows traversal order between chains and will not chain if traversal order forbids it, such as when traversing right to left or in columns.
-- `GROUP_BY_ITEM`: group placements by item and shape before creating build chains. This disregards traversal direction entirely in exchange for reducing the number of build commands.
+Use `BuildOrder.Flat` when all configured items should be built together.
+
+```ts
+const order = new BuildOrder.Flat([
+  Item.IRON_BLOCK,
+  Item.WALKWAY,
+  Item.CARGO_HATCH_PACKAGED
+]);
+```
+
+Customization methods:
+
+- `order.with(...itemIds)`: returns a copy with item IDs added.
+- `order.without(...itemIds)`: returns a copy with item IDs removed.
+- `order.direction(direction)`: returns a copy with the traversal direction.
+- `order.strict(value?)`: returns a copy with strict traversal following enabled or disabled. `value` defaults to `true`.
+
+### BuildOrder.Sequential
+
+Use `BuildOrder.Sequential` when each configured item should be built completely before the next item starts.
+
+```ts
+const order = new BuildOrder.Sequential([
+  Item.IRON_BLOCK,
+  Item.WALKWAY,
+  Item.CARGO_HATCH_PACKAGED
+]);
+```
+
+Customization methods:
+
+- `order.append(...itemIds)`: returns a copy with item IDs appended to the sequence.
+- `order.prepend(...itemIds)`: returns a copy with item IDs prepended to the sequence.
+- `order.insert(index, ...itemIds)`: returns a copy with item IDs inserted at an index in the sequence.
+- `order.without(...itemIds)`: returns a copy with item IDs removed from the sequence.
+- `order.before(anchorItemId, ...itemIds)`: returns a copy with item IDs inserted before an existing item, or appended if the anchor is not present.
+- `order.after(anchorItemId, ...itemIds)`: returns a copy with item IDs inserted after an existing item, or appended if the anchor is not present.
+- `order.direction(direction, ...itemIds)`: returns a copy with a traversal direction assigned globally, or to specific items when item IDs are provided.
+- `order.strict(value?)`: returns a copy with strict traversal following enabled or disabled. `value` defaults to `true`.
+
+Build-chain traversal options:
+
+- `followTraversalStrictly: true`: preserve traversal order strictly, even when that creates more build commands.
+- `followTraversalStrictly: false`: allow compatible placements later in traversal order to be chained together, while still preserving traversal order between chains. This can reduce command count.
 
 ## Constants
 

@@ -153,16 +153,3 @@ export enum TraversalAxis {
   /** Prefer horizontal traversal, i.e., traverse in rows, similar to the in-game encoder. */
   HORIZONTAL = "HORIZONTAL"
 }
-
-/**
- * Strategy for sorting and grouping placed items in `Structure`s into blueprint build chains.
- */
-export enum BuildChainMode {
-  /** Preserve traversal order strictly, even when that creates more commands. */
-  STRICT_TRAVERSAL = "STRICT_TRAVERSAL",
-  /** Allows passing over builds that are next in the build traversal direction and deferring them to the next chain to allow chaining valid builds that are past them.
-   * Will still follow traversal order between chains and will not chain if traversal order forbids it, such as when traversing right to left or in columns.*/
-  ALLOW_DEFERRAL = "ALLOW_DEFERRAL",
-  /** Group placements by item and shape before creating build chains. This disregards traversal direction entirely in exchange for reducing the number of build commands. */
-  GROUP_BY_ITEM = "GROUP_BY_ITEM"
-}

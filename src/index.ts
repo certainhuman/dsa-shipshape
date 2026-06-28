@@ -3,10 +3,15 @@ export {
 } from "./blueprint";
 export {
   BuildOrder,
-  DEFAULT_BUILD_ORDER,
   DEFAULT_STAGE_DIRECTIONS,
   DEFAULT_STAGE_ITEMS,
+  FlatBuildOrder,
+  SequentialBuildOrder,
+  StagedBuildOrder,
   type BuildOrderOptions,
+  type BuildOrderStage,
+  type FlatBuildOrderOptions,
+  type SequentialBuildOrderOptions,
   type StageDirections,
   type StageItems
 } from "./build-order";
@@ -37,7 +42,6 @@ export {
 } from "./constants";
 export {
   AdjacentPosition,
-  BuildChainMode,
   Direction,
   FilterType,
   Priority,

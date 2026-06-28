@@ -42,7 +42,7 @@ describe("Structure", () => {
     structure.place(Item.CARGO_HATCH_STARTER_PACKAGED, 3, 2);
     structure.place(Item.CARGO_HATCH_PACKAGED, 4, 2);
 
-    const order = new BuildOrder({ respectTraversalOrderForBuildChains: true });
+    const order = BuildOrder.GAME_DEFAULT.strict();
     const hatchCommands = structure
       .toBlueprint(order)
       .commands.filter((command) => command.type === "build" && command.item === Item.CARGO_HATCH_PACKAGED);
