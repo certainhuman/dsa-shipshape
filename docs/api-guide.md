@@ -23,6 +23,8 @@ Use `Blueprint.encode(blueprint, { prefix: true })` to serialize blueprint data 
 
 Use `Blueprint.create(width, height, commands)` when you already have a complete command array and want to assemble plain blueprint data directly.
 
+Use `Blueprint.sanitize(blueprint, options?)` to return a blueprint copy with easily-correctable issues fixed, such as shape data on tiles that do not support it.
+
 ```ts
 import { Blueprint } from "dsa-shipshape";
 
@@ -172,9 +174,24 @@ Instance methods:
 - `getAll()`: returns copies of all placements.
 - `count(item)`: counts placements matching an item ID.
 - `map(mapper)`: replaces every placement with the mapper result.
+- `sanitize(options?)`: fixes easily-correctable issues in place, such as shape data on unsupported tiles.
 - `toBlueprint(buildOrder?)`: compacts placements into blueprint commands.
 
 `Structure` currently allows multiple placements at the same coordinate. It does not perform occupancy checks.
+
+### Sanitizing Shape Data
+
+`sanitize()` removes shape data from tiles that cannot use it. By default, it preserves shape data only on tiles that currently support them: `Item.IRON_BLOCK`, `Item.ITEM_NET`, `Item.HYPER_RUBBER_BLOCK`, `Item.HYPER_ICE_BLOCK`, and `Item.WALKWAY`.
+
+Pass `{ onlyStrictlyUnsupportedShapes: true }` to remove shape data only from tiles that don't silently discard shape data: `Item.LOGISTICS_RAIL`, `Item.ANNIHILATOR_TILE`, and `Item.LADDER`.
+
+```ts
+structure.sanitize();
+
+const sanitizedBlueprint = Blueprint.sanitize(blueprint, {
+  onlyStrictlyUnsupportedShapes: true
+});
+```
 
 ## StructureBuild
 
